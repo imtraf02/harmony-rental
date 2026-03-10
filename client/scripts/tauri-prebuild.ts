@@ -1,4 +1,4 @@
-import { access, copyFile, mkdir, rm } from "node:fs/promises";
+import { access, chmod, copyFile, mkdir, rm } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
 function projectRootFromClientCwd(): string {
@@ -192,7 +192,10 @@ async function ensureWindowsPthreadShim(srcTauriDir: string) {
 	}
 
 	const dest = join(winLibsDir, "libpthread.a");
+	// Previous runs may have copied a read-only archive; remove to allow overwrite.
+	await rm(dest, { force: true });
 	await copyFile(libpthreadOrWinp.path, dest);
+	await chmod(dest, 0o644);
 }
 
 async function main() {
@@ -229,6 +232,9 @@ async function main() {
 		}
 		compileArgs.splice(2, 0, "--compile-executable-path", bunWindowsExe);
 	}
+
+	// Embed Prisma migration SQL into the compiled backend.
+	await sh("bun", ["run", "server/scripts/generate-migrations.ts"], { cwd: repoRoot });
 
 	await sh("bun", compileArgs, {
 		cwd: repoRoot,
