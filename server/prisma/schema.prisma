@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+generator pothos {
+  provider     = "prisma-pothos-types"
+  clientOutput = "./prisma"
+  output       = "../src/generated/pothos-prisma-types.ts"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ItemStatus {
+  AVAILABLE
+  RENTED
+  MAINTENANCE
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PICKED_UP
+  RETURNED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  DEPOSITED
+  PAID
+}
+
+model Customer {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  name      String
+  phone     String   @unique
+  address   String   @default("")
+  note      String   @default("")
+  orders    Order[]
+  createdAt DateTime @default(now())
+
+  @@map("customers")
+}
+
+model Category {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  name        String    @unique
+  description String
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String           @id @default(uuid(7)) @db.Uuid
+  name        String
+  categoryId  String           @db.Uuid
+  category    Category         @relation(fields: [categoryId], references: [id])
+  description String           @default("")
+  variants    ProductVariant[]
+  createdAt   DateTime         @default(now())
+
+  @@map("products")
+}
+
+model ProductVariant {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  productId   String   @db.Uuid
+  product     Product  @relation(fields: [productId], references: [id])
+  size        String   @default("")
+  color       String   @default("")
+  rentalPrice Int
+  deposit     Int
+  imageUrl    String?
+  items       Item[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([productId, size, color])
+  @@index([productId])
+  @@map("product_variants")
+}
+
+model Item {
+  id           String        @id @default(uuid(7)) @db.Uuid
+  code         String        @unique
+  variantId    String        @db.Uuid
+  variant      ProductVariant @relation(fields: [variantId], references: [id])
+  status       ItemStatus    @default(AVAILABLE)
+  note         String        @default("")
+  orderItems   OrderItem[]
+  maintenances Maintenance[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([variantId])
+  @@index([status])
+  @@map("items")
+}
+
+model Order {
+  id            String        @id @default(uuid(7)) @db.Uuid
+  code          String        @unique
+  customerId    String        @db.Uuid
+  customer      Customer      @relation(fields: [customerId], references: [id])
+  rentalDate    DateTime
+  returnDate    DateTime
+  returnedAt    DateTime?
+  eventDate     DateTime?
+  eventType     String?
+  totalAmount   Int
+  depositPaid   Int           @default(0)
+  balanceDue    Int
+  status        OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(UNPAID)
+  lateFee       Int           @default(0)
+  damageFee     Int           @default(0)
+  note          String        @default("")
+  items         OrderItem[]
+  payments      Payment[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([customerId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([createdAt])
+  @@index([returnDate])
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String @id @default(uuid(7)) @db.Uuid
+  orderId     String @db.Uuid
+  order       Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  itemId      String @db.Uuid
+  item        Item   @relation(fields: [itemId], references: [id])
+  rentalPrice Int
+  deposit     Int
+  damageNote  String @default("")
+
+  @@index([orderId])
+  @@index([itemId])
+  @@map("order_items")
+}
+
+model Payment {
+  id      String   @id @default(uuid(7)) @db.Uuid
+  orderId String   @db.Uuid
+  order   Order    @relation(fields: [orderId], references: [id])
+  amount  Int
+  method  String
+  note    String   @default("")
+  paidAt  DateTime @default(now())
+
+  @@index([orderId])
+  @@index([paidAt])
+  @@map("payments")
+}
+
+model Maintenance {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  itemId      String    @db.Uuid
+  item        Item      @relation(fields: [itemId], references: [id])
+  type        String
+  description String    @default("")
+  cost        Int       @default(0)
+  startDate   DateTime
+  endDate     DateTime?
+  done        Boolean   @default(false)
+
+  @@map("maintenances")
+}

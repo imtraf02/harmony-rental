@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+toolchain="${HARMONY_RUST_TOOLCHAIN:-stable}"
+
+rustup_bin="${RUSTUP:-}"
+if [[ -z "${rustup_bin}" ]]; then
+  rustup_bin="$(command -v rustup || true)"
+fi
+if [[ -z "${rustup_bin}" ]]; then
+  for candidate in \
+    "$HOME/.cargo/bin/rustup" \
+    "$HOME/.nix-profile/bin/rustup" \
+    "/etc/profiles/per-user/$USER/bin/rustup" \
+    "/run/current-system/sw/bin/rustup"
+  do
+    if [[ -x "$candidate" ]]; then
+      rustup_bin="$candidate"
+      break
+    fi
+  done
+fi
+if [[ -z "${rustup_bin}" ]]; then
+  echo "tauri-toolchain: rustup not found (set RUSTUP=/path/to/rustup)" >&2
+  exit 127
+fi
+
+exec "${rustup_bin}" run "${toolchain}" cargo "$@"

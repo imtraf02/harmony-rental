@@ -1,0 +1,16 @@
+node_modules/
+
+# Local env files
+.env
+*.local
+
+# Desktop build artifacts
+client/src-tauri/target/
+client/src-tauri/bin/
+client/src-tauri/win-libs/
+
+# Bun cross-compile helper (keep private / large)
+tools/bun/
+
+.DS_Store
+

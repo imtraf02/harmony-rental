@@ -1,0 +1,201 @@
+import { useMutation } from "@apollo/client/react";
+import { useForm } from "@tanstack/react-form";
+import { useEffect } from "react";
+import { toast } from "sonner";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+	InputGroup,
+	InputGroupTextarea,
+} from "@/components/ui/input-group";
+import type { CustomerFragment } from "@/gql/graphql";
+import { updateCustomer, customersQuery } from "../graphql";
+
+interface CustomersEditDialogProps {
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+	currentRow: CustomerFragment | null;
+}
+
+const formSchema = z.object({
+	name: z.string().min(1, "Vui lòng nhập tên khách hàng"),
+	phone: z.string().min(1, "Vui lòng nhập số điện thoại"),
+	address: z.string(),
+	note: z.string(),
+});
+
+export function CustomersEditDialog({
+	open,
+	onOpenChange,
+	currentRow,
+}: CustomersEditDialogProps) {
+	const [mutate, { loading }] = useMutation(updateCustomer, {
+		onCompleted: () => {
+			toast.success("Cập nhật khách hàng thành công");
+			onOpenChange(false);
+		},
+		onError: (err) => {
+			toast.error(err.message || "Đã có lỗi xảy ra");
+		},
+		refetchQueries: [{ query: customersQuery }],
+	});
+
+	const form = useForm({
+		defaultValues: {
+			name: currentRow?.name || "",
+			phone: currentRow?.phone || "",
+			address: currentRow?.address || "",
+			note: currentRow?.note || "",
+		},
+		validators: {
+			onSubmit: formSchema,
+		},
+		onSubmit: async ({ value }) => {
+			if (!currentRow) return;
+			await mutate({
+				variables: {
+					id: currentRow.id,
+					input: {
+						name: value.name,
+						phone: value.phone,
+						address: value.address,
+						note: value.note,
+					},
+				},
+			});
+		},
+	});
+
+	useEffect(() => {
+		if (currentRow && open) {
+			form.reset({
+				name: currentRow.name,
+				phone: currentRow.phone,
+				address: currentRow.address || "",
+				note: currentRow.note || "",
+			});
+		}
+	}, [currentRow, open, form]);
+
+	if (!currentRow) return null;
+
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent>
+				<form
+					onSubmit={(e) => {
+						e.preventDefault();
+						e.stopPropagation();
+						form.handleSubmit();
+					}}
+				>
+					<DialogHeader>
+						<DialogTitle>Chỉnh sửa khách hàng</DialogTitle>
+						<DialogDescription>
+							Cập nhật thông tin khách hàng.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="grid gap-4 py-4">
+						<form.Field name="name">
+							{(field) => (
+								<div className="grid gap-2">
+									<label htmlFor={field.name} className="text-sm font-medium">
+										Họ và tên
+									</label>
+									<Input
+										id={field.name}
+										value={field.state.value}
+										onBlur={field.handleBlur}
+										onChange={(e) => field.handleChange(e.target.value)}
+										placeholder="Nguyễn Văn A"
+									/>
+									{field.state.meta.errors.length > 0 && (
+										<p className="text-xs text-destructive">
+											{String(field.state.meta.errors[0])}
+										</p>
+									)}
+								</div>
+							)}
+						</form.Field>
+						<form.Field name="phone">
+							{(field) => (
+								<div className="grid gap-2">
+									<label htmlFor={field.name} className="text-sm font-medium">
+										Số điện thoại
+									</label>
+									<Input
+										id={field.name}
+										value={field.state.value}
+										onBlur={field.handleBlur}
+										onChange={(e) => field.handleChange(e.target.value)}
+										placeholder="0xxxxxxxxx"
+									/>
+									{field.state.meta.errors.length > 0 && (
+										<p className="text-xs text-destructive">
+											{String(field.state.meta.errors[0])}
+										</p>
+									)}
+								</div>
+							)}
+						</form.Field>
+						<form.Field name="address">
+							{(field) => (
+								<div className="grid gap-2">
+									<label htmlFor={field.name} className="text-sm font-medium">
+										Địa chỉ
+									</label>
+									<Input
+										id={field.name}
+										value={field.state.value}
+										onBlur={field.handleBlur}
+										onChange={(e) => field.handleChange(e.target.value)}
+										placeholder="Địa chỉ khách hàng"
+									/>
+								</div>
+							)}
+						</form.Field>
+						<form.Field name="note">
+							{(field) => (
+								<div className="grid gap-2">
+									<label htmlFor={field.name} className="text-sm font-medium">
+										Ghi chú
+									</label>
+									<InputGroup>
+										<InputGroupTextarea
+											id={field.name}
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChange={(e) => field.handleChange(e.target.value)}
+											placeholder="Thông tin thêm..."
+										/>
+									</InputGroup>
+								</div>
+							)}
+						</form.Field>
+					</div>
+					<DialogFooter>
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => onOpenChange(false)}
+						>
+							Hủy
+						</Button>
+						<Button type="submit" disabled={loading}>
+							{loading ? "Đang lưu..." : "Lưu thay đổi"}
+						</Button>
+					</DialogFooter>
+				</form>
+			</DialogContent>
+		</Dialog>
+	);
+}

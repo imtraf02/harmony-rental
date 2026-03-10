@@ -1,0 +1,41 @@
+{
+	"name": "server",
+	"module": "index.ts",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"dev": "bun --watch src/index.ts",
+		"start": "bun run src/index.ts",
+		"format": "bunx --bun @biomejs/biome format --write",
+		"lint": "bunx --bun @biomejs/biome lint --write",
+		"check": "bunx --bun @biomejs/biome check --write",
+		"db:generate": "prisma generate",
+		"db:migrate": "prisma migrate dev",
+		"db:seed": "prisma db seed",
+		"db:reset": "prisma db push --force-reset"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.4.6",
+		"@types/bun": "latest",
+		"prisma": "^7.4.2"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"@pothos/core": "^4.12.0",
+		"@pothos/plugin-dataloader": "^4.4.3",
+		"@pothos/plugin-prisma": "^4.14.2",
+		"@pothos/plugin-validation": "^4.2.0",
+		"@prisma/adapter-pg": "^7.4.2",
+		"@prisma/client": "^7.4.2",
+		"@t3-oss/env-core": "^0.13.10",
+		"dataloader": "^2.2.3",
+		"dotenv": "^17.3.1",
+		"graphql": "^16.13.1",
+		"graphql-scalars": "^1.25.0",
+		"graphql-yoga": "^5.18.1",
+		"pg": "^8.20.0",
+		"zod": "^4.3.6"
+	}
+}
