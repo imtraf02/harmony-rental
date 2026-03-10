@@ -2,14 +2,10 @@ import { access, chmod, copyFile, mkdir, rm } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
 function projectRootFromClientCwd(): string {
-	// This script is invoked via `bun run scripts/tauri-prebuild.ts` from the client package.
-	// Keep paths stable and explicit to avoid surprises in Tauri's `beforeBuildCommand`.
 	return resolve(import.meta.dirname, "..");
 }
 
 function targetTripleFromTauriEnv(): string | null {
-	// Tauri CLI sets these env vars for hook commands (beforeBuildCommand/beforeDevCommand).
-	// They don't include the full Rust triple, so we map conservatively.
 	const override =
 		process.env.HARMONY_TARGET_TRIPLE ??
 		process.env.TAURI_ENV_TARGET_TRIPLE ??
@@ -20,8 +16,6 @@ function targetTripleFromTauriEnv(): string | null {
 	const platform = process.env.TAURI_ENV_PLATFORM ?? "";
 	const arch = process.env.TAURI_ENV_ARCH ?? "";
 
-	// Expected values per Tauri CLI changelog: values match the target triple more accurately.
-	// We only support the one cross-build case requested (Windows x86_64 on Linux).
 	if (platform.includes("windows")) {
 		if (arch === "x86_64") return "x86_64-pc-windows-gnu";
 		throw new Error(
@@ -57,7 +51,6 @@ async function sh(
 }
 
 async function rustHostTriple(): Promise<string> {
-	// `rustc -vV` prints `host: <triple>`.
 	const { stdout } = await sh("rustc", ["-vV"]);
 	const hostLine = stdout
 		.split("\n")
@@ -81,24 +74,6 @@ async function which(cmd: string): Promise<string | null> {
 	return resolved.length ? resolved : null;
 }
 
-function parseGccSearchDirs(output: string): { libraries: string[] } {
-	// Example:
-	// libraries: =/nix/store/.../lib/gcc/...:/nix/store/.../x86_64-w64-mingw32/lib
-	const librariesLine = output
-		.split("\n")
-		.map((l) => l.trim())
-		.find((l) => l.startsWith("libraries:"));
-	if (!librariesLine) return { libraries: [] };
-	const eqIdx = librariesLine.indexOf("=");
-	if (eqIdx === -1) return { libraries: [] };
-	const paths = librariesLine
-		.slice(eqIdx + 1)
-		.split(":")
-		.map((p) => p.trim())
-		.filter(Boolean);
-	return { libraries: paths };
-}
-
 async function fileExists(path: string): Promise<boolean> {
 	try {
 		await access(path);
@@ -108,137 +83,81 @@ async function fileExists(path: string): Promise<boolean> {
 	}
 }
 
-async function ensureWindowsPthreadShim(srcTauriDir: string) {
-	const winLibsDir = join(srcTauriDir, "win-libs");
-	await mkdir(winLibsDir, { recursive: true });
-
-	// Rust's x86_64-pc-windows-gnu toolchain sometimes links `-l:libpthread.a`.
-	// Some mingw-w64 toolchains provide `libpthread.a`, others provide `libwinpthread.a`.
-	// On NixOS it is common to have `mcfgthread` instead of winpthreads.
-	const gcc = await which("x86_64-w64-mingw32-gcc");
-	if (!gcc) {
-		throw new Error(
-			"Missing `x86_64-w64-mingw32-gcc` in PATH. " +
-				"On NixOS, enter the repo `nix-shell` first (needs mingw-w64 toolchain).",
-		);
-	}
-
-	let libpthreadOrWinp: { path: string; kind: "pthread" | "winpthread" } | null =
-		null;
-
-	// 1) Ask gcc directly.
-	{
-		for (const [file, kind] of [
-			["libpthread.a", "pthread"],
-			["libwinpthread.a", "winpthread"],
-		] as const) {
-			const { stdout } = await sh(gcc, [`-print-file-name=${file}`]);
-			const candidate = stdout.trim();
-			if (candidate && candidate !== file && (await fileExists(candidate))) {
-				libpthreadOrWinp = { path: candidate, kind };
-				break;
-			}
-		}
-	}
-
-	// 2) Fallback: scan library search dirs.
-	if (!libpthreadOrWinp) {
-		const { stdout } = await sh(gcc, ["-print-search-dirs"]);
-		const { libraries } = parseGccSearchDirs(stdout);
-		for (const dir of libraries) {
-			for (const [file, kind] of [
-				["libpthread.a", "pthread"],
-				["libwinpthread.a", "winpthread"],
-			] as const) {
-				const candidate = join(dir, file);
-				if (await fileExists(candidate)) {
-					libpthreadOrWinp = { path: candidate, kind };
-					break;
-				}
-			}
-			if (libpthreadOrWinp) break;
-		}
-	}
-
-	// 3) NixOS fallback: use mcfgthread as pthread provider.
-	// This is a pragmatic shim: it satisfies Rust's `-l:libpthread.a` and provides pthread_* symbols.
-	if (!libpthreadOrWinp) {
-		const { stdout } = await sh("bash", [
-			"-lc",
-			"ls -1 /nix/store/*mcfgthread*x86_64-w64-mingw32*/lib/libmcfgthread.a 2>/dev/null | head -n 1",
-		]);
-		const candidate = stdout.trim();
-		if (candidate && (await fileExists(candidate))) {
-			libpthreadOrWinp = { path: candidate, kind: "pthread" };
-		}
-	}
-
-	// 4) Allow manual override.
-	if (!libpthreadOrWinp) {
-		const override =
-			process.env.HARMONY_LIBPTHREAD_A ??
-			process.env.HARMONY_LIBWINPTHREAD_A ??
-			null;
-		if (override && (await fileExists(override))) {
-			libpthreadOrWinp = { path: override, kind: "pthread" };
-		}
-	}
-
-	if (!libpthreadOrWinp) {
-		throw new Error(
-			"Unable to locate a pthread provider for x86_64-w64-mingw32. " +
-				"Set `HARMONY_LIBPTHREAD_A=/abs/path/to/libpthread.a` (or `HARMONY_LIBWINPTHREAD_A=/abs/path/to/libwinpthread.a`).",
-		);
-	}
-
-	const dest = join(winLibsDir, "libpthread.a");
-	// Previous runs may have copied a read-only archive; remove to allow overwrite.
-	await rm(dest, { force: true });
-	await copyFile(libpthreadOrWinp.path, dest);
-	await chmod(dest, 0o644);
-}
-
 async function main() {
 	const clientRoot = projectRootFromClientCwd();
 	const repoRoot = resolve(clientRoot, "..");
 	const srcTauriDir = join(clientRoot, "src-tauri");
 	const binDir = join(srcTauriDir, "bin");
+	const resourcesDir = join(srcTauriDir, "resources");
 
 	const triple = targetTripleFromTauriEnv() ?? (await rustHostTriple());
 	const isWindowsTarget = triple.includes("windows");
 	const ext = isWindowsTarget ? ".exe" : "";
-	const outFile = join(binDir, `harmony-server-${triple}${ext}`);
 
-	// Avoid stale binaries when switching toolchains/targets.
+	// ── 1. Prepare directories ──
 	await mkdir(binDir, { recursive: true });
-	await rm(outFile, { force: true });
+	await mkdir(resourcesDir, { recursive: true });
 
-	const entry = join(repoRoot, "server", "src", "index.ts");
-	console.info(`[tauri-prebuild] Building backend sidecar: ${outFile}`);
-	const compileArgs = ["build", "--compile", "--outfile", outFile, entry];
+	// ── 2. Generate embedded migrations SQL ──
+	console.info("[tauri-prebuild] Generating embedded migrations...");
+	await sh("bun", ["run", "server/scripts/generate-migrations.ts"], { cwd: repoRoot });
+
+	// ── 3. Bundle server into a single JS file ──
+	const serverEntry = join(repoRoot, "server", "src", "index.ts");
+	const bundleOut = join(resourcesDir, "server-bundle.js");
+	await rm(bundleOut, { force: true });
+
+	console.info(`[tauri-prebuild] Bundling server → ${bundleOut}`);
+	await sh("bun", ["build", "--target=bun", "--outfile", bundleOut, serverEntry], {
+		cwd: repoRoot,
+	});
+
+	if (!(await fileExists(bundleOut))) {
+		throw new Error(`Server bundle was not created at ${bundleOut}`);
+	}
+	console.info("[tauri-prebuild] Server bundle OK.");
+
+	// ── 4. Copy Bun runtime as sidecar ──
+	const sidecarOut = join(binDir, `bun-${triple}${ext}`);
+	await rm(sidecarOut, { force: true });
 
 	if (isWindowsTarget && process.platform !== "win32") {
-		await ensureWindowsPthreadShim(srcTauriDir);
-
-		// Bun can cross-compile when given a target-platform Bun executable "template".
-		// Provide it via env var to keep this repo network-free and Nix-friendly.
+		// Cross-build: user must provide a Windows Bun executable
 		const bunWindowsExe =
 			process.env.HARMONY_BUN_WINDOWS_EXE ?? process.env.BUN_WINDOWS_EXE ?? null;
 		if (!bunWindowsExe) {
 			throw new Error(
 				"Missing `HARMONY_BUN_WINDOWS_EXE` (path to bun.exe for Windows). " +
-					"Required to cross-compile backend sidecar for Windows on non-Windows hosts.",
+					"Required to cross-compile for Windows on non-Windows hosts.",
 			);
 		}
-		compileArgs.splice(2, 0, "--compile-executable-path", bunWindowsExe);
+		if (!(await fileExists(bunWindowsExe))) {
+			throw new Error(`HARMONY_BUN_WINDOWS_EXE not found at: ${bunWindowsExe}`);
+		}
+		console.info(`[tauri-prebuild] Copying Windows Bun runtime: ${bunWindowsExe} → ${sidecarOut}`);
+		await copyFile(bunWindowsExe, sidecarOut);
+		await chmod(sidecarOut, 0o755);
+	} else {
+		// Native build: resolve `bun` from PATH
+		const bunPath = await which("bun");
+		if (!bunPath) {
+			throw new Error("Could not find `bun` in PATH. Bun is required as the backend runtime.");
+		}
+
+		// Resolve symlinks to the real binary
+		const realBunPath = await Bun.file(bunPath).exists()
+			? bunPath
+			: null;
+		if (!realBunPath) {
+			throw new Error(`Resolved bun path does not exist: ${bunPath}`);
+		}
+
+		console.info(`[tauri-prebuild] Copying host Bun runtime: ${realBunPath} → ${sidecarOut}`);
+		await copyFile(realBunPath, sidecarOut);
+		await chmod(sidecarOut, 0o755);
 	}
 
-	// Embed Prisma migration SQL into the compiled backend.
-	await sh("bun", ["run", "server/scripts/generate-migrations.ts"], { cwd: repoRoot });
-
-	await sh("bun", compileArgs, {
-		cwd: repoRoot,
-	});
+	console.info("[tauri-prebuild] Done ✓");
 }
 
 main().catch((err) => {

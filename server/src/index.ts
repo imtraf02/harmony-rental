@@ -1,7 +1,9 @@
 import { resolve, sep } from "node:path";
-import dotenv from "dotenv";
 import { createYoga } from "graphql-yoga";
 import { applyEmbeddedMigrations } from "./bootstrap/migrate";
+import { createContext } from "./context";
+import { env } from "./env";
+import { schema } from "./schema";
 
 function safeUploadsPath(uploadsDir: string, requestPathname: string): string | null {
 	// Prevent path traversal: only allow paths under UPLOADS_DIR.
@@ -12,16 +14,8 @@ function safeUploadsPath(uploadsDir: string, requestPathname: string): string | 
 }
 
 async function main() {
-	const envFile = process.env.ENV_FILE;
-	if (envFile) {
-		dotenv.config({ path: envFile });
-	}
-
-	const [{ createContext }, { env }, { schema }] = await Promise.all([
-		import("./context"),
-		import("./env"),
-		import("./schema"),
-	]);
+	console.info("Starting server...");
+	console.info("Environment variables loaded.");
 
 	if (env.AUTO_DB_INIT) {
 		console.info("Applying embedded database migrations (if needed)...");
@@ -30,7 +24,7 @@ async function main() {
 	}
 
 	const yoga = createYoga({
-		schema,
+		schema: schema,
 		context: createContext,
 	});
 

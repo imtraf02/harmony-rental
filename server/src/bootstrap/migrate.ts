@@ -34,8 +34,6 @@ async function tableExists(client: Client, tableName: string): Promise<boolean> 
 }
 
 export async function applyEmbeddedMigrations(databaseUrl: string): Promise<void> {
-	if (MIGRATIONS.length === 0) return;
-
 	const client = new Client({ connectionString: databaseUrl });
 	await client.connect();
 	try {

@@ -1,60 +1,58 @@
 import { ApolloProvider } from "@apollo/client/react";
 import { TanStackDevtools } from "@tanstack/react-devtools";
-import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Outlet, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { apolloClient } from "@/lib/apollo";
-import appCss from "../styles/index.css?url";
+import "@/styles/index.css";
 
-const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getItem('theme');var mode=(stored==='light'||stored==='dark'||stored==='auto')?stored:'auto';var prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;var resolved=mode==='auto'?(prefersDark?'dark':'light'):mode;var root=document.documentElement;root.classList.remove('light','dark');root.classList.add(resolved);if(mode==='auto'){root.removeAttribute('data-theme')}else{root.setAttribute('data-theme',mode)}root.style.colorScheme=resolved;}catch(e){}})();`;
+function initTheme() {
+	try {
+		const stored = window.localStorage.getItem("theme");
+		const mode =
+			stored === "light" || stored === "dark" || stored === "auto" ? stored : "auto";
+		const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+		const resolved = mode === "auto" ? (prefersDark ? "dark" : "light") : mode;
+		const root = document.documentElement;
+		root.classList.remove("light", "dark");
+		root.classList.add(resolved);
+		if (mode === "auto") {
+			root.removeAttribute("data-theme");
+		} else {
+			root.setAttribute("data-theme", mode);
+		}
+		root.style.colorScheme = resolved;
+	} catch {
+		// ignore
+	}
+}
 
 export const Route = createRootRoute({
-	head: () => ({
-		meta: [
-			{
-				charSet: "utf-8",
-			},
-			{
-				name: "viewport",
-				content: "width=device-width, initial-scale=1",
-			},
-			{
-				title: "TanStack Start Starter",
-			},
-		],
-		links: [
-			{
-				rel: "stylesheet",
-				href: appCss,
-			},
-		],
-	}),
-	shellComponent: RootDocument,
+	component: RootLayout,
 });
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function RootLayout() {
+	useEffect(() => {
+		initTheme();
+	}, []);
+
 	return (
-		<html lang="en" suppressHydrationWarning>
-			<head>
-				<script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-				<HeadContent />
-			</head>
-			<body className="font-sans antialiased wrap-anywhere">
-				<ApolloProvider client={apolloClient}>{children}</ApolloProvider>
-				<Toaster />
-				<TanStackDevtools
-					config={{
-						position: "bottom-right",
-					}}
-					plugins={[
-						{
-							name: "Tanstack Router",
-							render: <TanStackRouterDevtoolsPanel />,
-						},
-					]}
-				/>
-				<Scripts />
-			</body>
-		</html>
+		<ApolloProvider client={apolloClient}>
+			<Outlet />
+			<Toaster />
+			<TanStackDevtools
+				config={{
+					position: "bottom-right",
+				}}
+				plugins={[
+					{
+						name: "Tanstack Router",
+						render: <TanStackRouterDevtoolsPanel />,
+					},
+				]}
+			/>
+		</ApolloProvider>
 	);
 }
+
