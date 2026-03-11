@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import type { OrderFragment } from "@/gql/graphql";
 import { OrderStatus, type PaymentStatus } from "@/gql/graphql";
 import { cn } from "@/lib/utils";
+import { formatVnd } from "@/lib/format";
 import {
 	getOrderStatusConfig,
 	getPaymentStatusConfig,
@@ -18,13 +19,6 @@ export {
 	getOrderStatusConfig,
 	getPaymentStatusConfig,
 } from "../constants/status";
-
-export const formatCurrency = (amount: number) => {
-	return new Intl.NumberFormat("vi-VN", {
-		style: "currency",
-		currency: "VND",
-	}).format(amount);
-};
 
 export const ordersColumns: ColumnDef<OrderFragment>[] = [
 	{
@@ -192,7 +186,7 @@ export const ordersColumns: ColumnDef<OrderFragment>[] = [
 		header: "Tổng tiền",
 		cell: ({ row }) => {
 			const amount = parseFloat(row.getValue("totalAmount"));
-			const formatted = formatCurrency(amount);
+			const formatted = formatVnd(amount);
 			return <div className="text-right font-medium">{formatted}</div>;
 		},
 	},

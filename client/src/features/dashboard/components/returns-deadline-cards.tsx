@@ -27,21 +27,7 @@ type ReturnsDeadlineCardsProps = {
 	overdueReturns: DueOrder[];
 };
 
-function formatVnd(value: number) {
-	return new Intl.NumberFormat("vi-VN", {
-		style: "currency",
-		currency: "VND",
-		maximumFractionDigits: 0,
-	}).format(value);
-}
-
-function formatDate(value: string) {
-	return new Date(value).toLocaleDateString("vi-VN", {
-		day: "2-digit",
-		month: "2-digit",
-		year: "numeric",
-	});
-}
+import { formatDate, formatVnd } from "@/lib/format";
 
 function DueList({ data, overdue }: { data: DueOrder[]; overdue?: boolean }) {
 	if (data.length === 0) {

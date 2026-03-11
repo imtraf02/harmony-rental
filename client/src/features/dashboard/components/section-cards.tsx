@@ -19,13 +19,7 @@ type SectionCardsProps = {
 	outstandingBalance: number;
 };
 
-function formatVnd(value: number) {
-	return new Intl.NumberFormat("vi-VN", {
-		style: "currency",
-		currency: "VND",
-		maximumFractionDigits: 0,
-	}).format(value);
-}
+import { formatVnd } from "@/lib/format";
 
 export function SectionCards({
 	totalRevenue,

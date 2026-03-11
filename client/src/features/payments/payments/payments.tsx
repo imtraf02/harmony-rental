@@ -4,7 +4,6 @@ import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton";
 import { DatePickerField } from "@/components/date-picker-field";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
-import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Button } from "@/components/ui/button";
 import { useDebounce } from "@/hooks/use-debounce";
 import { PAYMENT_HISTORY_QUERY } from "../graphql/queries";
@@ -126,11 +125,7 @@ function PaymentsTableWrapper() {
 export function Payments() {
 	return (
 		<>
-			<Header>
-				<div className="ms-auto flex items-center space-x-4">
-					<ThemeSwitcher />
-				</div>
-			</Header>
+			<Header />
 			<Main>
 				<div className="space-y-1">
 					<h1 className="text-2xl font-bold tracking-tight">

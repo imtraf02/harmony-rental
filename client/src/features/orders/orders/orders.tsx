@@ -1,17 +1,17 @@
-import { useSuspenseQuery } from "@apollo/client/react";
+import { useApolloClient, useSubscription, useSuspenseQuery } from "@apollo/client/react";
 import { Link } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { Suspense, useEffect, useState, useTransition } from "react";
 import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
-import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Button } from "@/components/ui/button";
 import type { OrderFragment, OrderStatus, PaymentStatus } from "@/gql/graphql";
 import { useDebounce } from "@/hooks/use-debounce";
 import { OrdersDialogs } from "../common/orders-dialogs";
 import { OrdersProvider } from "../common/orders-provider";
 import { ordersQuery } from "../graphql";
+import { orderUpdatedSubscription } from "../../notifications/graphql";
 import { OrdersTable } from "./orders-table";
 
 interface OrdersProps {
@@ -98,13 +98,21 @@ export function Orders({
 	paymentStatuses,
 	data,
 }: OrdersProps) {
+	const client = useApolloClient();
+	useSubscription(orderUpdatedSubscription, {
+		onData: ({ data: subData }) => {
+			console.log('[Orders] 🔔 Subscription onData fired:', subData);
+			void client.refetchQueries({ include: [ordersQuery] });
+		},
+		onError: (err) => {
+			console.error('[Orders] ❌ Subscription error:', err);
+		},
+	});
+	console.log('[Orders] 📡 useSubscription mounted');
+
 	return (
 		<OrdersProvider>
-			<Header>
-				<div className="ms-auto flex items-center space-x-4">
-					<ThemeSwitcher />
-				</div>
-			</Header>
+			<Header />
 
 			<Main fixed>
 				<div className="flex flex-wrap items-end justify-between gap-2">

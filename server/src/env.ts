@@ -1,5 +1,5 @@
-import dotenv from "dotenv";
 import { createEnv } from "@t3-oss/env-core";
+import dotenv from "dotenv";
 import { z } from "zod";
 
 // Load .env file BEFORE validation.
@@ -21,6 +21,8 @@ export const env = createEnv({
 		NODE_ENV: z.enum(["development", "production"]).default("development"),
 		UPLOADS_DIR: z.string().optional(),
 		AUTO_DB_INIT: z.coerce.boolean().default(false),
+		SUPABASE_URL: z.url(),
+		SUPABASE_SERVICE_ROLE_KEY: z.string(),
 	},
 	runtimeEnv: process.env,
 	emptyStringAsUndefined: true,

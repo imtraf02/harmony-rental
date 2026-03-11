@@ -28,6 +28,7 @@ import {
 } from "@/features/payments/constants/payment-methods";
 import { PAYMENT_HISTORY_QUERY } from "@/features/payments/graphql/queries";
 import { type OrderFragment, OrderStatus } from "@/gql/graphql";
+import { formatVnd } from "@/lib/format";
 import { ordersQuery, updateOrder, updateOrderStatus } from "../graphql";
 
 const RECORD_ORDER_PAYMENT = gql`
@@ -56,13 +57,7 @@ interface OrderCollectPaymentDialogProps {
 	currentRow: OrderFragment;
 }
 
-function formatCurrency(amount: number) {
-	return new Intl.NumberFormat("vi-VN", {
-		style: "currency",
-		currency: "VND",
-		maximumFractionDigits: 0,
-	}).format(amount);
-}
+
 
 export function OrderCollectPaymentDialog({
 	open,
@@ -196,7 +191,7 @@ export function OrderCollectPaymentDialog({
 						{refundableAmount > 0 ? (
 							<>
 								Khách: {currentRow.customer.name} • Hoàn cọc dư:{" "}
-								{formatCurrency(refundableAmount)}
+								{formatVnd(refundableAmount)}
 							</>
 						) : isSettledAmount ? (
 							<>
@@ -206,7 +201,7 @@ export function OrderCollectPaymentDialog({
 						) : (
 							<>
 								Khách: {currentRow.customer.name} • Còn nợ:{" "}
-								{formatCurrency(dueAmount)}
+								{formatVnd(dueAmount)}
 							</>
 						)}
 					</DialogDescription>
@@ -214,7 +209,7 @@ export function OrderCollectPaymentDialog({
 
 				<div className="grid grid-cols-1 gap-3 py-2">
 					<div className="grid gap-1.5">
-						<label className="text-sm font-medium">
+						<label htmlFor="amount-input" className="text-sm font-medium">
 							{refundableAmount > 0
 								? "Số tiền hoàn"
 								: isSettledAmount
@@ -223,15 +218,16 @@ export function OrderCollectPaymentDialog({
 						</label>
 						{refundableAmount > 0 ? (
 							<div className="rounded-md border bg-muted px-3 py-2 text-sm font-semibold">
-								{formatCurrency(refundableAmount)}
+								{formatVnd(refundableAmount)}
 							</div>
 						) : isSettledAmount ? (
 							<div className="rounded-md border bg-muted px-3 py-2 text-sm font-semibold">
-								{formatCurrency(0)}
+								{formatVnd(0)}
 							</div>
 						) : (
 							<>
 								<Input
+									id="amount-input"
 									type="number"
 									min={1}
 									step={1000}
@@ -266,8 +262,11 @@ export function OrderCollectPaymentDialog({
 					</div>
 
 					<div className="grid gap-1.5">
-						<label className="text-sm font-medium">Phương thức</label>
+						<label htmlFor="method-select" className="text-sm font-medium">
+							Phương thức
+						</label>
 						<Select
+							id="method-select"
 							items={paymentMethodItems}
 							value={method}
 							onValueChange={(value) => {
@@ -293,7 +292,9 @@ export function OrderCollectPaymentDialog({
 					</div>
 
 					<div className="grid gap-1.5">
-						<label className="text-sm font-medium">Ngày thu (tuỳ chọn)</label>
+						<label className="text-sm font-medium">
+							Ngày thu (tuỳ chọn)
+						</label>
 						<DatePickerField
 							value={paidAt}
 							onChange={setPaidAt}
@@ -303,8 +304,11 @@ export function OrderCollectPaymentDialog({
 					</div>
 
 					<div className="grid gap-1.5">
-						<label className="text-sm font-medium">Ghi chú</label>
+						<label htmlFor="note-input" className="text-sm font-medium">
+							Ghi chú
+						</label>
 						<Input
+							id="note-input"
 							value={note}
 							onChange={(event) => setNote(event.target.value)}
 							placeholder="Nội dung giao dịch"
@@ -312,10 +316,11 @@ export function OrderCollectPaymentDialog({
 					</div>
 
 					<div className="grid gap-1.5">
-						<label className="text-sm font-medium">
+						<label htmlFor="status-select" className="text-sm font-medium">
 							Trạng thái đơn sau khi chốt
 						</label>
 						<Select
+							id="status-select"
 							items={statusItems}
 							value={nextStatus}
 							onValueChange={(value) => {

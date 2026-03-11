@@ -36,13 +36,7 @@ const chartConfig = {
 	},
 } satisfies ChartConfig;
 
-function formatVnd(value: number) {
-	return new Intl.NumberFormat("vi-VN", {
-		style: "currency",
-		currency: "VND",
-		maximumFractionDigits: 0,
-	}).format(value);
-}
+import { formatDate, formatShortDate, formatVnd } from "@/lib/format";
 
 export function ChartAreaInteractive({
 	data,
@@ -92,26 +86,13 @@ export function ChartAreaInteractive({
 							axisLine={false}
 							tickMargin={8}
 							minTickGap={24}
-							tickFormatter={(value) =>
-								new Date(value).toLocaleDateString("vi-VN", {
-									month: "short",
-									day: "numeric",
-								})
-							}
+							tickFormatter={(value) => formatShortDate(value)}
 						/>
 						<ChartTooltip
 							cursor={false}
 							content={
 								<ChartTooltipContent
-									labelFormatter={(value) =>
-										typeof value === "string"
-											? new Date(value).toLocaleDateString("vi-VN", {
-													day: "numeric",
-													month: "short",
-													year: "numeric",
-												})
-											: ""
-									}
+									labelFormatter={(value) => formatDate(value)}
 									formatter={(value, name) => {
 										if (name === "revenue") {
 											return formatVnd(Number(value));

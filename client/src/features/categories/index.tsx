@@ -2,7 +2,6 @@ import { ArrowDownAZ, ArrowUpAZ, SlidersHorizontal } from "lucide-react";
 import { type ChangeEvent, useState } from "react";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
-import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Input } from "@/components/ui/input";
 import {
 	Select,
@@ -24,11 +23,7 @@ export function Categories() {
 
 	return (
 		<CategoriesProvider>
-			<Header>
-				<div className="ms-auto flex items-center space-x-4">
-					<ThemeSwitcher />
-				</div>
-			</Header>
+			<Header />
 
 			<Main fixed>
 				<div className="flex flex-wrap items-end justify-between gap-2">

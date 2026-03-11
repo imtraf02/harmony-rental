@@ -51,3 +51,7 @@ builder.scalarType("File", {
 	serialize: (value) => value,
 	parseValue: (value) => value as File,
 });
+
+builder.queryType({});
+builder.mutationType({});
+builder.subscriptionType({});

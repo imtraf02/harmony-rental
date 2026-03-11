@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
-import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -339,11 +338,7 @@ function MaintenancesContent() {
 export function Maintenances() {
 	return (
 		<>
-			<Header>
-				<div className="ms-auto flex items-center space-x-4">
-					<ThemeSwitcher />
-				</div>
-			</Header>
+			<Header />
 			<Main>
 				<div className="space-y-1">
 					<h1 className="text-2xl font-bold tracking-tight">

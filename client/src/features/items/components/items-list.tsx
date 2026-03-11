@@ -9,9 +9,8 @@ import {
 	IconTag,
 	IconTrash,
 } from "@tabler/icons-react";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import { Suspense } from "react";
+import { formatDate, formatShortDate, formatVnd } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -116,12 +115,7 @@ interface Props {
 	selectedStatuses?: Set<string>;
 }
 
-function formatCurrency(value: number) {
-	return new Intl.NumberFormat("vi-VN", {
-		style: "currency",
-		currency: "VND",
-	}).format(value);
-}
+
 
 function getStatusConfig(status: ItemStatus) {
 	switch (status) {
@@ -305,7 +299,7 @@ function ItemCard({ item }: { item: InventoryItem }) {
 							Giá thuê
 						</span>
 						<span className="text-sm font-bold text-primary">
-							{formatCurrency(item.variant.rentalPrice)}
+							{formatVnd(item.variant.rentalPrice)}
 						</span>
 					</div>
 					<div className="flex items-center justify-between">
@@ -314,7 +308,7 @@ function ItemCard({ item }: { item: InventoryItem }) {
 							Tiền cọc
 						</span>
 						<span className="text-sm font-medium text-foreground">
-							{formatCurrency(item.variant.deposit)}
+							{formatVnd(item.variant.deposit)}
 						</span>
 					</div>
 				</div>
@@ -343,13 +337,8 @@ function ItemCard({ item }: { item: InventoryItem }) {
 											{rental.orderCode}
 										</span>
 										<span className="text-muted-foreground">
-											{format(new Date(rental.rentalDate), "dd/MM", {
-												locale: vi,
-											})}{" "}
-											-{" "}
-											{format(new Date(rental.returnDate), "dd/MM/yyyy", {
-												locale: vi,
-											})}
+											{formatShortDate(rental.rentalDate)} -{" "}
+											{formatDate(rental.returnDate)}
 										</span>
 									</div>
 									<div className="mt-1 text-muted-foreground">

@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import * as z from "zod";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
-import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -108,11 +107,7 @@ export function ProductCreateForm() {
 
 	return (
 		<>
-			<Header>
-				<div className="ms-auto flex items-center space-x-4">
-					<ThemeSwitcher />
-				</div>
-			</Header>
+			<Header />
 
 			<Main>
 				<div className="flex flex-col gap-8 max-w-5xl mx-auto pb-20">

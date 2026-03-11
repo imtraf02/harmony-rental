@@ -3,6 +3,8 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { Search } from "../search";
+import { ThemeSwitcher } from "@/components/theme-switcher";
+import { NotificationBell } from "@/features/notifications";
 
 type HeaderProps = React.HTMLAttributes<HTMLElement> & {
 	fixed?: boolean;
@@ -53,7 +55,11 @@ export function Header({
 					className="h-5 data-[orientation=vertical]:self-center"
 				/>
 				<Search />
-				{children}
+				<div className="ms-auto flex items-center space-x-2">
+					<NotificationBell />
+					<ThemeSwitcher />
+					{children}
+				</div>
 			</div>
 		</header>
 	);

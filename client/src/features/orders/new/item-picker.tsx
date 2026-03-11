@@ -21,6 +21,7 @@ import { CategoriesSelect } from "@/features/categories/components/categories-se
 import { itemsQuery } from "@/features/items/graphql";
 import type { ItemFragment } from "@/gql/graphql";
 import { cn } from "@/lib/utils";
+import { formatVnd } from "@/lib/format";
 
 interface ItemPickerProps {
 	selectedItems: ItemFragment[];
@@ -29,12 +30,7 @@ interface ItemPickerProps {
 	onOpenChange: (open: boolean) => void;
 }
 
-function formatCurrency(value: number) {
-	return new Intl.NumberFormat("vi-VN", {
-		style: "currency",
-		currency: "VND",
-	}).format(value);
-}
+
 
 function ItemPickerContent({
 	selectedItems,
@@ -201,7 +197,7 @@ function ItemPickerContent({
 											</p>
 										</div>
 										<p className="font-black text-primary">
-											{formatCurrency(variant.rentalPrice)}
+											{formatVnd(variant.rentalPrice)}
 										</p>
 									</div>
 

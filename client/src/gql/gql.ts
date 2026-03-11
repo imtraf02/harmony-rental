@@ -27,6 +27,7 @@ type Documents = {
 	"\n  query Customers {\n    customers {\n      ...Customer\n    }\n  }\n": typeof types.CustomersDocument;
 	"\n  query Customer($id: ID!) {\n    customer(id: $id) {\n      ...Customer\n    }\n  }\n": typeof types.CustomerDocument;
 	"\n\tquery DashboardAnalytics(\n\t\t$preset: DashboardTimePreset!\n\t\t$startDate: DateTime\n\t\t$endDate: DateTime\n\t\t$upcomingDays: Int\n\t) {\n\t\tdashboardAnalytics(\n\t\t\tpreset: $preset\n\t\t\tstartDate: $startDate\n\t\t\tendDate: $endDate\n\t\t\tupcomingDays: $upcomingDays\n\t\t) {\n\t\t\trangeStart\n\t\t\trangeEnd\n\t\t\ttotalOrders\n\t\t\ttotalRevenue\n\t\t\tdepositCollected\n\t\t\toutstandingBalance\n\t\t\tactiveOrders\n\t\t\tchart {\n\t\t\t\tdate\n\t\t\t\torders\n\t\t\t\trevenue\n\t\t\t}\n\t\t\tupcomingReturns {\n\t\t\t\tid\n\t\t\t\tcode\n\t\t\t\tcustomerName\n\t\t\t\tcustomerPhone\n\t\t\t\trentalDate\n\t\t\t\treturnDate\n\t\t\t\ttotalAmount\n\t\t\t\tbalanceDue\n\t\t\t\tstatus\n\t\t\t\tdaysToDue\n\t\t\t}\n\t\t\toverdueReturns {\n\t\t\t\tid\n\t\t\t\tcode\n\t\t\t\tcustomerName\n\t\t\t\tcustomerPhone\n\t\t\t\trentalDate\n\t\t\t\treturnDate\n\t\t\t\ttotalAmount\n\t\t\t\tbalanceDue\n\t\t\t\tstatus\n\t\t\t\tdaysToDue\n\t\t\t}\n\t\t}\n\t}\n": typeof types.DashboardAnalyticsDocument;
+	"\n\tquery InventoryItems($variantId: String) {\n\t\titems(variantId: $variantId) {\n\t\t\tid\n\t\t\tcode\n\t\t\tvariantId\n\t\t\tstatus\n\t\t\tnote\n\t\t\tcreatedAt\n\t\t\tupdatedAt\n\t\t\tfutureRentals {\n\t\t\t\torderId\n\t\t\t\torderCode\n\t\t\t\trentalDate\n\t\t\t\treturnDate\n\t\t\t\tcustomerName\n\t\t\t}\n\t\t\tvariant {\n\t\t\t\tid\n\t\t\t\tproductId\n\t\t\t\tsize\n\t\t\t\tcolor\n\t\t\t\trentalPrice\n\t\t\t\tdeposit\n\t\t\t\timageUrl\n\t\t\t\titemsCount\n\t\t\t\tavailableCount\n\t\t\t\tcreatedAt\n\t\t\t\tupdatedAt\n\t\t\t\tproduct {\n\t\t\t\t\tid\n\t\t\t\t\tname\n\t\t\t\t\tcategoryId\n\t\t\t\t\tcategory {\n\t\t\t\t\t\tid\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n": typeof types.InventoryItemsDocument;
 	"\n  fragment Variant on ProductVariant {\n    id\n    productId\n    size\n    color\n    rentalPrice\n    deposit\n    imageUrl\n    itemsCount\n    availableCount\n    createdAt\n    updatedAt\n  }\n": typeof types.VariantFragmentDoc;
 	"\n  fragment Product on Product {\n    id\n    name\n    categoryId\n    category {\n      id\n      name\n    }\n    description\n    variants {\n      ...Variant\n    }\n    createdAt\n  }\n": typeof types.ProductFragmentDoc;
 	"\n  fragment Item on Item {\n    id\n    code\n    variantId\n    variant {\n      ...Variant\n      product {\n        id\n        name\n        categoryId\n        category {\n          id\n        }\n      }\n    }\n    status\n    note\n    createdAt\n    updatedAt\n  }\n": typeof types.ItemFragmentDoc;
@@ -38,6 +39,8 @@ type Documents = {
 	"\n  query Items($variantId: String) {\n    items(variantId: $variantId) {\n      ...Item\n    }\n  }\n": typeof types.ItemsDocument;
 	"\n  query Products($categoryId: String) {\n    products(categoryId: $categoryId) {\n      ...Product\n    }\n  }\n": typeof types.ProductsDocument;
 	"\n  query ProductVariants($productId: String!) {\n    productVariants(productId: $productId) {\n      ...Variant\n    }\n  }\n": typeof types.ProductVariantsDocument;
+	"\n  query UpcomingReturnsNotification($days: Int) {\n    upcomingReturns(days: $days) {\n      id\n      code\n      customerName\n      customerPhone\n      returnDate\n      totalAmount\n      balanceDue\n      status\n      daysToDue\n    }\n  }\n": typeof types.UpcomingReturnsNotificationDocument;
+	"\n  subscription OrderUpdated($id: String) {\n    orderUpdated(id: $id)\n  }\n": typeof types.OrderUpdatedDocument;
 	"\n  fragment Order on Order {\n    id\n    code\n    customer {\n      id\n      name\n      phone\n      address\n    }\n    rentalDate\n    returnDate\n    returnedAt\n    eventDate\n    eventType\n    totalAmount\n    depositPaid\n    balanceDue\n    status\n    paymentStatus\n    lateFee\n    damageFee\n    note\n    items {\n      id\n      item {\n        id\n        code\n        variant {\n          id\n          size\n          color\n          imageUrl\n          product {\n            id\n            name\n          }\n        }\n      }\n      rentalPrice\n      deposit\n      damageNote\n    }\n    createdAt\n  }\n": typeof types.OrderFragmentDoc;
 	"\n  mutation CreateOrder($input: CreateOrderInput!) {\n    createOrder(input: $input) {\n      ...Order\n    }\n  }\n": typeof types.CreateOrderDocument;
 	"\n  mutation UpdateOrderStatus($id: ID!, $status: OrderStatus!) {\n    updateOrderStatus(id: $id, status: $status) {\n      ...Order\n    }\n  }\n": typeof types.UpdateOrderStatusDocument;
@@ -83,6 +86,8 @@ const documents: Documents = {
 		types.CustomerDocument,
 	"\n\tquery DashboardAnalytics(\n\t\t$preset: DashboardTimePreset!\n\t\t$startDate: DateTime\n\t\t$endDate: DateTime\n\t\t$upcomingDays: Int\n\t) {\n\t\tdashboardAnalytics(\n\t\t\tpreset: $preset\n\t\t\tstartDate: $startDate\n\t\t\tendDate: $endDate\n\t\t\tupcomingDays: $upcomingDays\n\t\t) {\n\t\t\trangeStart\n\t\t\trangeEnd\n\t\t\ttotalOrders\n\t\t\ttotalRevenue\n\t\t\tdepositCollected\n\t\t\toutstandingBalance\n\t\t\tactiveOrders\n\t\t\tchart {\n\t\t\t\tdate\n\t\t\t\torders\n\t\t\t\trevenue\n\t\t\t}\n\t\t\tupcomingReturns {\n\t\t\t\tid\n\t\t\t\tcode\n\t\t\t\tcustomerName\n\t\t\t\tcustomerPhone\n\t\t\t\trentalDate\n\t\t\t\treturnDate\n\t\t\t\ttotalAmount\n\t\t\t\tbalanceDue\n\t\t\t\tstatus\n\t\t\t\tdaysToDue\n\t\t\t}\n\t\t\toverdueReturns {\n\t\t\t\tid\n\t\t\t\tcode\n\t\t\t\tcustomerName\n\t\t\t\tcustomerPhone\n\t\t\t\trentalDate\n\t\t\t\treturnDate\n\t\t\t\ttotalAmount\n\t\t\t\tbalanceDue\n\t\t\t\tstatus\n\t\t\t\tdaysToDue\n\t\t\t}\n\t\t}\n\t}\n":
 		types.DashboardAnalyticsDocument,
+	"\n\tquery InventoryItems($variantId: String) {\n\t\titems(variantId: $variantId) {\n\t\t\tid\n\t\t\tcode\n\t\t\tvariantId\n\t\t\tstatus\n\t\t\tnote\n\t\t\tcreatedAt\n\t\t\tupdatedAt\n\t\t\tfutureRentals {\n\t\t\t\torderId\n\t\t\t\torderCode\n\t\t\t\trentalDate\n\t\t\t\treturnDate\n\t\t\t\tcustomerName\n\t\t\t}\n\t\t\tvariant {\n\t\t\t\tid\n\t\t\t\tproductId\n\t\t\t\tsize\n\t\t\t\tcolor\n\t\t\t\trentalPrice\n\t\t\t\tdeposit\n\t\t\t\timageUrl\n\t\t\t\titemsCount\n\t\t\t\tavailableCount\n\t\t\t\tcreatedAt\n\t\t\t\tupdatedAt\n\t\t\t\tproduct {\n\t\t\t\t\tid\n\t\t\t\t\tname\n\t\t\t\t\tcategoryId\n\t\t\t\t\tcategory {\n\t\t\t\t\t\tid\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n":
+		types.InventoryItemsDocument,
 	"\n  fragment Variant on ProductVariant {\n    id\n    productId\n    size\n    color\n    rentalPrice\n    deposit\n    imageUrl\n    itemsCount\n    availableCount\n    createdAt\n    updatedAt\n  }\n":
 		types.VariantFragmentDoc,
 	"\n  fragment Product on Product {\n    id\n    name\n    categoryId\n    category {\n      id\n      name\n    }\n    description\n    variants {\n      ...Variant\n    }\n    createdAt\n  }\n":
@@ -105,6 +110,10 @@ const documents: Documents = {
 		types.ProductsDocument,
 	"\n  query ProductVariants($productId: String!) {\n    productVariants(productId: $productId) {\n      ...Variant\n    }\n  }\n":
 		types.ProductVariantsDocument,
+	"\n  query UpcomingReturnsNotification($days: Int) {\n    upcomingReturns(days: $days) {\n      id\n      code\n      customerName\n      customerPhone\n      returnDate\n      totalAmount\n      balanceDue\n      status\n      daysToDue\n    }\n  }\n":
+		types.UpcomingReturnsNotificationDocument,
+	"\n  subscription OrderUpdated($id: String) {\n    orderUpdated(id: $id)\n  }\n":
+		types.OrderUpdatedDocument,
 	"\n  fragment Order on Order {\n    id\n    code\n    customer {\n      id\n      name\n      phone\n      address\n    }\n    rentalDate\n    returnDate\n    returnedAt\n    eventDate\n    eventType\n    totalAmount\n    depositPaid\n    balanceDue\n    status\n    paymentStatus\n    lateFee\n    damageFee\n    note\n    items {\n      id\n      item {\n        id\n        code\n        variant {\n          id\n          size\n          color\n          imageUrl\n          product {\n            id\n            name\n          }\n        }\n      }\n      rentalPrice\n      deposit\n      damageNote\n    }\n    createdAt\n  }\n":
 		types.OrderFragmentDoc,
 	"\n  mutation CreateOrder($input: CreateOrderInput!) {\n    createOrder(input: $input) {\n      ...Order\n    }\n  }\n":
@@ -235,6 +244,12 @@ export function graphql(
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(
+	source: "\n\tquery InventoryItems($variantId: String) {\n\t\titems(variantId: $variantId) {\n\t\t\tid\n\t\t\tcode\n\t\t\tvariantId\n\t\t\tstatus\n\t\t\tnote\n\t\t\tcreatedAt\n\t\t\tupdatedAt\n\t\t\tfutureRentals {\n\t\t\t\torderId\n\t\t\t\torderCode\n\t\t\t\trentalDate\n\t\t\t\treturnDate\n\t\t\t\tcustomerName\n\t\t\t}\n\t\t\tvariant {\n\t\t\t\tid\n\t\t\t\tproductId\n\t\t\t\tsize\n\t\t\t\tcolor\n\t\t\t\trentalPrice\n\t\t\t\tdeposit\n\t\t\t\timageUrl\n\t\t\t\titemsCount\n\t\t\t\tavailableCount\n\t\t\t\tcreatedAt\n\t\t\t\tupdatedAt\n\t\t\t\tproduct {\n\t\t\t\t\tid\n\t\t\t\t\tname\n\t\t\t\t\tcategoryId\n\t\t\t\t\tcategory {\n\t\t\t\t\t\tid\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n",
+): (typeof documents)["\n\tquery InventoryItems($variantId: String) {\n\t\titems(variantId: $variantId) {\n\t\t\tid\n\t\t\tcode\n\t\t\tvariantId\n\t\t\tstatus\n\t\t\tnote\n\t\t\tcreatedAt\n\t\t\tupdatedAt\n\t\t\tfutureRentals {\n\t\t\t\torderId\n\t\t\t\torderCode\n\t\t\t\trentalDate\n\t\t\t\treturnDate\n\t\t\t\tcustomerName\n\t\t\t}\n\t\t\tvariant {\n\t\t\t\tid\n\t\t\t\tproductId\n\t\t\t\tsize\n\t\t\t\tcolor\n\t\t\t\trentalPrice\n\t\t\t\tdeposit\n\t\t\t\timageUrl\n\t\t\t\titemsCount\n\t\t\t\tavailableCount\n\t\t\t\tcreatedAt\n\t\t\t\tupdatedAt\n\t\t\t\tproduct {\n\t\t\t\t\tid\n\t\t\t\t\tname\n\t\t\t\t\tcategoryId\n\t\t\t\t\tcategory {\n\t\t\t\t\t\tid\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
 	source: "\n  fragment Variant on ProductVariant {\n    id\n    productId\n    size\n    color\n    rentalPrice\n    deposit\n    imageUrl\n    itemsCount\n    availableCount\n    createdAt\n    updatedAt\n  }\n",
 ): (typeof documents)["\n  fragment Variant on ProductVariant {\n    id\n    productId\n    size\n    color\n    rentalPrice\n    deposit\n    imageUrl\n    itemsCount\n    availableCount\n    createdAt\n    updatedAt\n  }\n"];
 /**
@@ -297,6 +312,18 @@ export function graphql(
 export function graphql(
 	source: "\n  query ProductVariants($productId: String!) {\n    productVariants(productId: $productId) {\n      ...Variant\n    }\n  }\n",
 ): (typeof documents)["\n  query ProductVariants($productId: String!) {\n    productVariants(productId: $productId) {\n      ...Variant\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+	source: "\n  query UpcomingReturnsNotification($days: Int) {\n    upcomingReturns(days: $days) {\n      id\n      code\n      customerName\n      customerPhone\n      returnDate\n      totalAmount\n      balanceDue\n      status\n      daysToDue\n    }\n  }\n",
+): (typeof documents)["\n  query UpcomingReturnsNotification($days: Int) {\n    upcomingReturns(days: $days) {\n      id\n      code\n      customerName\n      customerPhone\n      returnDate\n      totalAmount\n      balanceDue\n      status\n      daysToDue\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(
+	source: "\n  subscription OrderUpdated($id: String) {\n    orderUpdated(id: $id)\n  }\n",
+): (typeof documents)["\n  subscription OrderUpdated($id: String) {\n    orderUpdated(id: $id)\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

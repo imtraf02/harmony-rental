@@ -27,6 +27,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { formatVnd } from "@/lib/format";
 import { categories as categoriesQuery } from "@/features/categories/graphql";
 import { createItem, createProduct, createProductVariant, productsQuery, productVariantsQuery } from "../graphql";
 import type { 
@@ -38,7 +39,7 @@ import type {
 	CreateItemMutationVariables
 } from "@/gql/graphql";
 
-type MutateFn<TData, TVariables> = any;
+
 
 interface ItemsCreateDialogProps {
 	open: boolean;
@@ -160,7 +161,7 @@ interface ProductStepProps {
 	selectedProductId: string | null;
 	setSelectedProductId: (id: string | null) => void;
 	setStep: (step: "product" | "variant" | "item") => void;
-	mutateCreateProduct: MutateFn<CreateProductMutation, CreateProductMutationVariables>;
+	mutateCreateProduct: (variables: { variables: { input: any } }) => Promise<any>;
 }
 
 function ProductStep({ selectedProductId, setSelectedProductId, setStep, mutateCreateProduct }: ProductStepProps) {
@@ -273,7 +274,7 @@ interface VariantStepProps {
 	selectedProductId: string;
 	setSelectedVariantId: (id: string | null) => void;
 	setStep: (step: "product" | "variant" | "item") => void;
-	mutateCreateVariant: MutateFn<CreateProductVariantMutation, CreateProductVariantMutationVariables>;
+	mutateCreateVariant: (variables: { variables: { input: any } }) => Promise<any>;
 }
 
 function VariantStep({ selectedProductId, setSelectedVariantId, setStep, mutateCreateVariant }: VariantStepProps) {
@@ -408,7 +409,7 @@ function VariantStep({ selectedProductId, setSelectedVariantId, setStep, mutateC
 interface ItemStepProps {
 	selectedVariantId: string;
 	setStep: (step: "product" | "variant" | "item") => void;
-	mutateCreateItem: MutateFn<CreateItemMutation, CreateItemMutationVariables>;
+	mutateCreateItem: (variables: { variables: { input: any } }) => Promise<any>;
 	loading: boolean;
 	onOpenChange: (open: boolean) => void;
 	resetAll: () => void;
@@ -495,7 +496,7 @@ function VariantSelector({ productId, onSelect }: { productId: string, onSelect:
 					{data.productVariants.map((v) => (
 						<Button key={v.id} variant="outline" className="justify-start h-auto py-2 px-3 flex-col items-start" onClick={() => onSelect(v.id)}>
 							<span className="text-sm font-semibold">{v.color} - Size {v.size}</span>
-							<span className="text-[10px] text-muted-foreground">{new Intl.NumberFormat("vi-VN").format(v.rentalPrice)}đ</span>
+							<span className="text-[10px] text-muted-foreground">{formatVnd(v.rentalPrice)}</span>
 						</Button>
 					))}
 				</div>

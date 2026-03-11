@@ -19,6 +19,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ProductFragment } from "@/gql/graphql";
 import { getCategoryIcon } from "@/lib/category-icons";
+import { formatVnd } from "@/lib/format";
 import { productsQuery } from "../graphql/queries";
 import { useProducts } from "../common/products-provider";
 
@@ -26,12 +27,7 @@ interface Props {
 	searchTerm: string;
 }
 
-function formatCurrency(value: number) {
-	return new Intl.NumberFormat("vi-VN", {
-		style: "currency",
-		currency: "VND",
-	}).format(value);
-}
+
 
 function ProductCard({ product }: { product: ProductFragment }) {
 	const { setOpen, setCurrentRow } = useProducts();
@@ -151,8 +147,8 @@ function ProductCard({ product }: { product: ProductFragment }) {
 						</span>
 						<span className="text-sm font-black text-primary text-right">
 							{minPrice === maxPrice
-								? formatCurrency(minPrice)
-								: `${formatCurrency(minPrice)} - ${formatCurrency(maxPrice)}`}
+								? formatVnd(minPrice)
+								: `${formatVnd(minPrice)} - ${formatVnd(maxPrice)}`}
 						</span>
 					</div>
 				</div>

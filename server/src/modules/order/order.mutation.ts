@@ -6,6 +6,7 @@ import {
 	PaymentStatus,
 } from "../../generated/prisma/enums";
 import { calculateRentalTotalByDays } from "../../utils/date";
+import { pubsub } from "../../utils/pubsub";
 import {
 	CreateOrderInput,
 	Order,
@@ -160,7 +161,7 @@ builder.mutationFields((t) => ({
 					input.depositPaid,
 				);
 
-				return tx.order.create({
+				const created = await tx.order.create({
 					...query,
 					data: {
 						code,
@@ -184,6 +185,8 @@ builder.mutationFields((t) => ({
 						},
 					},
 				});
+				pubsub.publish("orderUpdated", { id: created.id, event: "CREATE" });
+				return created;
 			});
 		},
 	}),
@@ -218,7 +221,7 @@ builder.mutationFields((t) => ({
 					status,
 				);
 
-				return tx.order.update({
+				const updated = await tx.order.update({
 					...query,
 					where: { id: id as string },
 					data: {
@@ -231,6 +234,8 @@ builder.mutationFields((t) => ({
 									: undefined,
 					},
 				});
+				pubsub.publish("orderUpdated", { id: id as string, event: "UPDATE_STATUS" });
+				return updated;
 			});
 		},
 	}),
@@ -279,11 +284,13 @@ builder.mutationFields((t) => ({
 				});
 			}
 
-			return ctx.prisma.order.update({
+			const updated = await ctx.prisma.order.update({
 				...query,
 				where: { id: id as string },
 				data: { paymentStatus: status },
 			});
+			pubsub.publish("orderUpdated", { id: id as string, event: "UPDATE_PAYMENT_STATUS" });
+			return updated;
 		},
 	}),
 
@@ -361,7 +368,7 @@ builder.mutationFields((t) => ({
 					returnedAt = null;
 				}
 
-				return tx.order.update({
+				const updated = await tx.order.update({
 					...query,
 					where: { id: id as string },
 					data: {
@@ -381,6 +388,8 @@ builder.mutationFields((t) => ({
 						paymentStatus,
 					},
 				});
+				pubsub.publish("orderUpdated", { id: id as string, event: "UPDATE" });
+				return updated;
 			});
 		},
 	}),
@@ -405,10 +414,12 @@ builder.mutationFields((t) => ({
 					data: { status: ItemStatus.AVAILABLE },
 				});
 
-				return tx.order.delete({
+				const deleted = await tx.order.delete({
 					...query,
 					where: { id: id as string },
 				});
+				pubsub.publish("orderUpdated", { id: id as string, event: "DELETE" });
+				return deleted;
 			});
 		},
 	}),
@@ -426,6 +437,7 @@ builder.mutationFields((t) => ({
 				include: { order: true },
 			});
 
+			pubsub.publish("orderUpdated", { id: orderItem.orderId, event: "UPDATE_ITEM" });
 			return ctx.prisma.order.findUniqueOrThrow({
 				...query,
 				where: { id: orderItem.orderId },
@@ -514,6 +526,7 @@ builder.mutationFields((t) => ({
 					},
 				});
 
+				pubsub.publish("orderUpdated", { id: input.orderId, event: "PAYMENT" });
 				return tx.order.findUniqueOrThrow({
 					...query,
 					where: { id: input.orderId },

@@ -3,7 +3,6 @@ import { ArrowDownAZ, ArrowUpAZ, SlidersHorizontal } from "lucide-react";
 import { type ChangeEvent, useState } from "react";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
-import { ThemeSwitcher } from "@/components/theme-switcher";
 import { FacetedFilter } from "@/components/ui/faceted-filter";
 import { Input } from "@/components/ui/input";
 import {
@@ -36,11 +35,7 @@ export function Items() {
 
 	return (
 		<ItemsProvider>
-			<Header>
-				<div className="ms-auto flex items-center space-x-4">
-					<ThemeSwitcher />
-				</div>
-			</Header>
+			<Header />
 
 			<Main fixed>
 				<div className="flex flex-wrap items-end justify-between gap-2">

@@ -1,8 +1,5 @@
 import { builder } from "./builder";
 
-builder.queryType({});
-builder.mutationType({});
-
 import "./modules/category";
 import "./modules/product";
 import "./modules/item";

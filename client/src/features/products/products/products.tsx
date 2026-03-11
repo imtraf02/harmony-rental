@@ -2,7 +2,6 @@ import { IconPlus, IconSearch } from "@tabler/icons-react";
 import { useState } from "react";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
-import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -30,11 +29,7 @@ export function Products() {
 
 	return (
 		<ProductsProvider>
-			<Header>
-				<div className="ms-auto flex items-center space-x-4">
-					<ThemeSwitcher />
-				</div>
-			</Header>
+			<Header />
 
 			<Main fixed>
 				<div className="flex flex-wrap items-end justify-between gap-2">

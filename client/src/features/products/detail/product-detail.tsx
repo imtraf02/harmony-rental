@@ -16,7 +16,6 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
-import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type {
@@ -26,6 +25,7 @@ import type {
 } from "@/gql/graphql";
 import { getCategoryIcon } from "@/lib/category-icons";
 import { cn } from "@/lib/utils";
+import { formatVnd } from "@/lib/format";
 import { useProducts } from "../common/products-provider";
 import { productQuery } from "../graphql/queries";
 import { ProductRelatedPayments } from "./product-related-payments";
@@ -157,11 +157,7 @@ export function ProductDetail() {
 
 	return (
 		<>
-			<Header>
-				<div className="ms-auto flex items-center space-x-4">
-					<ThemeSwitcher />
-				</div>
-			</Header>
+			<Header />
 
 			<Main>
 				<div className="flex flex-col gap-8 max-w-6xl mx-auto pb-20">
@@ -403,10 +399,7 @@ export function ProductDetail() {
 															Giá thuê/ngày
 														</p>
 														<p className="font-extrabold text-primary text-sm mt-1">
-															{new Intl.NumberFormat("vi-VN", {
-																style: "currency",
-																currency: "VND",
-															}).format(variant.rentalPrice)}
+															{formatVnd(variant.rentalPrice)}
 														</p>
 													</div>
 													<div className="rounded-lg border bg-muted/20 px-3 py-2 sm:flex-1">
@@ -414,10 +407,7 @@ export function ProductDetail() {
 															Tiền cọc
 														</p>
 														<p className="font-bold text-sm mt-1 text-foreground">
-															{new Intl.NumberFormat("vi-VN", {
-																style: "currency",
-																currency: "VND",
-															}).format(variant.deposit)}
+															{formatVnd(variant.deposit)}
 														</p>
 													</div>
 													<div className="rounded-lg border bg-muted/20 px-3 py-2 sm:flex-1">

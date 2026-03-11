@@ -1,8 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import { paymentMethodLabelMap } from "../constants/payment-methods";
+import { formatDateTime, formatVnd } from "@/lib/format";
 
 export type PaymentHistoryRow = {
 	id: string;
@@ -21,13 +20,7 @@ export type PaymentHistoryRow = {
 	};
 };
 
-function formatCurrency(amount: number) {
-	return new Intl.NumberFormat("vi-VN", {
-		style: "currency",
-		currency: "VND",
-		maximumFractionDigits: 0,
-	}).format(amount);
-}
+
 
 export const paymentsColumns: ColumnDef<PaymentHistoryRow>[] = [
 	{
@@ -60,8 +53,7 @@ export const paymentsColumns: ColumnDef<PaymentHistoryRow>[] = [
 	{
 		accessorKey: "paidAt",
 		header: "Ngày thu",
-		cell: ({ row }) =>
-			format(new Date(row.original.paidAt), "dd/MM/yyyy HH:mm", { locale: vi }),
+		cell: ({ row }) => formatDateTime(row.original.paidAt),
 	},
 	{
 		accessorKey: "method",
@@ -72,7 +64,7 @@ export const paymentsColumns: ColumnDef<PaymentHistoryRow>[] = [
 	{
 		accessorKey: "amount",
 		header: "Số tiền",
-		cell: ({ row }) => formatCurrency(row.original.amount),
+		cell: ({ row }) => formatVnd(row.original.amount),
 	},
 	{
 		accessorKey: "note",

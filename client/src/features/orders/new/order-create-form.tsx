@@ -25,6 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CustomersSelect } from "@/features/customers";
 import type { ItemFragment } from "@/gql/graphql";
 import { createOrder, ordersQuery } from "../graphql";
+import { formatVnd } from "@/lib/format";
 import { ItemPicker } from "./item-picker";
 
 const formSchema = z.object({
@@ -42,12 +43,7 @@ const formSchema = z.object({
 	note: z.string(),
 });
 
-function formatCurrency(value: number) {
-	return new Intl.NumberFormat("vi-VN", {
-		style: "currency",
-		currency: "VND",
-	}).format(value);
-}
+
 
 export function OrderCreateForm() {
 	const navigate = useNavigate();
@@ -58,7 +54,7 @@ export function OrderCreateForm() {
 		onCompleted: (data) => {
 			const finalTotal = data?.createOrder?.totalAmount ?? 0;
 			toast.success(
-				`Tạo đơn thuê thành công. Tổng tiền: ${formatCurrency(finalTotal)}`,
+				`Tạo đơn thuê thành công. Tổng tiền: ${formatVnd(finalTotal)}`,
 			);
 			navigate({ to: "/orders" });
 		},
@@ -446,10 +442,10 @@ export function OrderCreateForm() {
 												</p>
 												<div className="text-xs text-muted-foreground flex gap-2 mt-0.5">
 													<span>
-														Giá/ngày: {formatCurrency(item.variant.rentalPrice)}
+														Giá/ngày: {formatVnd(item.variant.rentalPrice)}
 													</span>
 													<span>
-														Cọc: {formatCurrency(item.variant.deposit)}
+														Cọc: {formatVnd(item.variant.deposit)}
 													</span>
 												</div>
 											</div>
@@ -500,7 +496,7 @@ export function OrderCreateForm() {
 													Tổng giá thuê ({days} ngày):
 												</span>
 												<span className="font-medium">
-													{formatCurrency(currentRentalPrice)}
+													{formatVnd(currentRentalPrice)}
 												</span>
 											</div>
 											<div className="flex justify-between">
@@ -508,13 +504,13 @@ export function OrderCreateForm() {
 													Tổng tiền cọc yêu cầu:
 												</span>
 												<span className="font-medium">
-													{formatCurrency(totalDeposit)}
+													{formatVnd(totalDeposit)}
 												</span>
 											</div>
 											<div className="flex justify-between pt-2 border-t text-base font-semibold">
 												<span>Tổng tiền thuê:</span>
 												<span className="text-primary text-xl">
-													{formatCurrency(currentRentalPrice)}
+													{formatVnd(currentRentalPrice)}
 												</span>
 											</div>
 										</div>
@@ -588,7 +584,7 @@ export function OrderCreateForm() {
 												Còn lại phải thu:
 											</span>
 											<span className="font-bold">
-												{formatCurrency(balance)}
+												{formatVnd(balance)}
 											</span>
 										</div>
 									);

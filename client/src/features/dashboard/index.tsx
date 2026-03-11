@@ -3,7 +3,6 @@ import { useMemo, useState } from "react";
 import { DatePickerField } from "@/components/date-picker-field";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
-import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Button } from "@/components/ui/button";
 import {
 	Select,
@@ -100,11 +99,7 @@ export function Dashboard() {
 
 	return (
 		<>
-			<Header>
-				<div className="ms-auto flex items-center space-x-4">
-					<ThemeSwitcher />
-				</div>
-			</Header>
+			<Header />
 			<Main className="flex flex-1 flex-col gap-4 sm:gap-6">
 				<div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
 					<div>

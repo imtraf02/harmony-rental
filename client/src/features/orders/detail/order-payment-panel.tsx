@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import type { OrderFragment } from "@/gql/graphql";
 import { cn } from "@/lib/utils";
 import { OrderCollectPaymentDialog } from "../orders/order-collect-payment-dialog";
-import { formatCurrency } from "../orders/orders-columns";
+import { formatVnd } from "@/lib/format";
 
 interface OrderPaymentPanelProps {
 	order: OrderFragment;
@@ -39,19 +39,19 @@ export function OrderPaymentPanel({ order }: OrderPaymentPanelProps) {
 								Tổng tiền thuê
 							</span>
 							<span className="text-sm font-semibold text-foreground">
-								{formatCurrency(order.totalAmount)}
+								{formatVnd(order.totalAmount)}
 							</span>
 						</div>
 						<div className="flex justify-between items-center">
 							<span className="text-sm text-muted-foreground">Phí quá hạn</span>
 							<span className="text-sm font-semibold text-chart-5">
-								{formatCurrency(order.lateFee || 0)}
+								{formatVnd(order.lateFee || 0)}
 							</span>
 						</div>
 						<div className="flex justify-between items-center">
 							<span className="text-sm text-muted-foreground">Phí hư hại</span>
 							<span className="text-sm font-semibold text-destructive">
-								{formatCurrency(order.damageFee || 0)}
+								{formatVnd(order.damageFee || 0)}
 							</span>
 						</div>
 					</div>
@@ -63,7 +63,7 @@ export function OrderPaymentPanel({ order }: OrderPaymentPanelProps) {
 							Tổng cộng
 						</span>
 						<span className="text-base font-black text-primary">
-							{formatCurrency(totalWithFees)}
+							{formatVnd(totalWithFees)}
 						</span>
 					</div>
 
@@ -72,7 +72,7 @@ export function OrderPaymentPanel({ order }: OrderPaymentPanelProps) {
 							Đã thanh toán / cọc
 						</span>
 						<span className="text-sm font-bold text-chart-2">
-							{formatCurrency(order.depositPaid)}
+							{formatVnd(order.depositPaid)}
 						</span>
 					</div>
 
@@ -98,7 +98,7 @@ export function OrderPaymentPanel({ order }: OrderPaymentPanelProps) {
 								order.balanceDue >= 0 ? "text-primary" : "text-chart-2",
 							)}
 						>
-							{formatCurrency(Math.abs(order.balanceDue))}
+							{formatVnd(Math.abs(order.balanceDue))}
 						</span>
 					</div>
 				</CardContent>

@@ -8,6 +8,7 @@ import type {
 import { addDays, endOfDay, formatDateKey, startOfDay } from "../../utils/date";
 import {
 	DashboardAnalytics,
+	DashboardDueOrder,
 	DashboardTimePresetType,
 	Order,
 	OrderStatusType,
@@ -436,6 +437,73 @@ builder.queryFields((t) => ({
 				endDate: args.endDate,
 			});
 			return ctx.prisma.payment.count({ where });
+		},
+	}),
+	upcomingReturns: t.field({
+		type: [DashboardDueOrder],
+		args: {
+			days: t.arg.int({ defaultValue: 7 }),
+		},
+		resolve: async (_root, args, ctx) => {
+			const upcomingDays = args.days ?? 7;
+			const now = new Date();
+			const nowDay = startOfDay(now).getTime();
+			const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+			const toDueOrder = (order: {
+				id: string;
+				code: string;
+				customer: { name: string; phone: string };
+				rentalDate: Date;
+				returnDate: Date;
+				totalAmount: number;
+				balanceDue: number;
+				status: OrderStatus;
+			}) => ({
+				id: order.id,
+				code: order.code,
+				customerName: order.customer.name,
+				customerPhone: order.customer.phone,
+				rentalDate: order.rentalDate,
+				returnDate: order.returnDate,
+				totalAmount: order.totalAmount,
+				balanceDue: order.balanceDue,
+				status: order.status,
+				daysToDue: Math.ceil(
+					(startOfDay(order.returnDate).getTime() - nowDay) / MS_PER_DAY,
+				),
+			});
+
+			const [upcomingOrders, overdueOrders] = await Promise.all([
+				ctx.prisma.order.findMany({
+					where: {
+						status: {
+							notIn: [OrderStatus.RETURNED, OrderStatus.CANCELLED],
+						},
+						returnDate: {
+							gte: now,
+							lte: endOfDay(addDays(now, upcomingDays)),
+						},
+					},
+					include: { customer: true },
+					orderBy: { returnDate: "asc" },
+				}),
+				ctx.prisma.order.findMany({
+					where: {
+						status: {
+							notIn: [OrderStatus.RETURNED, OrderStatus.CANCELLED],
+						},
+						returnDate: { lt: now },
+					},
+					include: { customer: true },
+					orderBy: { returnDate: "asc" },
+				}),
+			]);
+
+			return [
+				...overdueOrders.map(toDueOrder),
+				...upcomingOrders.map(toDueOrder),
+			];
 		},
 	}),
 }));

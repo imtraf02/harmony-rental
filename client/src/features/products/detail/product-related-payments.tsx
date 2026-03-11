@@ -1,9 +1,8 @@
 import { gql } from "@apollo/client";
 import { useMutation, useSuspenseQuery } from "@apollo/client/react";
 import { Link } from "@tanstack/react-router";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import { useMemo, useState } from "react";
+import { formatDate, formatVnd } from "@/lib/format";
 import { toast } from "sonner";
 import { DatePickerField } from "@/components/date-picker-field";
 import { Button } from "@/components/ui/button";
@@ -102,13 +101,7 @@ const statusItems: Array<{
 }));
 const MIN_NOTE_LENGTH = 10;
 
-function formatCurrency(amount: number) {
-	return new Intl.NumberFormat("vi-VN", {
-		style: "currency",
-		currency: "VND",
-		maximumFractionDigits: 0,
-	}).format(amount);
-}
+
 
 type CollectPaymentDialogProps = {
 	open: boolean;
@@ -248,7 +241,7 @@ function CollectPaymentDialog({
 						{refundableAmount > 0 ? (
 							<>
 								Khách: {order?.customer.name ?? "-"} • Hoàn cọc dư:{" "}
-								{formatCurrency(refundableAmount)}
+								{formatVnd(refundableAmount)}
 							</>
 						) : isSettledAmount ? (
 							<>
@@ -258,7 +251,7 @@ function CollectPaymentDialog({
 						) : (
 							<>
 								Khách: {order?.customer.name ?? "-"} • Còn nợ:{" "}
-								{formatCurrency(dueAmount)}
+								{formatVnd(dueAmount)}
 							</>
 						)}
 					</DialogDescription>
@@ -266,7 +259,7 @@ function CollectPaymentDialog({
 
 				<div className="grid grid-cols-1 gap-3 py-2">
 					<div className="grid gap-1.5">
-						<label className="text-sm font-medium">
+						<label htmlFor="p-amount-input" className="text-sm font-medium">
 							{refundableAmount > 0
 								? "Số tiền hoàn"
 								: isSettledAmount
@@ -275,15 +268,16 @@ function CollectPaymentDialog({
 						</label>
 						{refundableAmount > 0 ? (
 							<div className="rounded-md border bg-muted px-3 py-2 text-sm font-semibold">
-								{formatCurrency(refundableAmount)}
+								{formatVnd(refundableAmount)}
 							</div>
 						) : isSettledAmount ? (
 							<div className="rounded-md border bg-muted px-3 py-2 text-sm font-semibold">
-								{formatCurrency(0)}
+								{formatVnd(0)}
 							</div>
 						) : (
 							<>
 								<Input
+									id="p-amount-input"
 									type="number"
 									min={1}
 									step={1000}
@@ -318,8 +312,11 @@ function CollectPaymentDialog({
 					</div>
 
 					<div className="grid gap-1.5">
-						<label className="text-sm font-medium">Phương thức</label>
+						<label htmlFor="p-method-select" className="text-sm font-medium">
+							Phương thức
+						</label>
 						<Select
+							id="p-method-select"
 							items={paymentMethodItems}
 							value={method}
 							onValueChange={(value) => {
@@ -345,7 +342,9 @@ function CollectPaymentDialog({
 					</div>
 
 					<div className="grid gap-1.5">
-						<label className="text-sm font-medium">Ngày thu (tuỳ chọn)</label>
+						<label className="text-sm font-medium">
+							Ngày thu (tuỳ chọn)
+						</label>
 						<DatePickerField
 							value={paidAt}
 							onChange={setPaidAt}
@@ -355,8 +354,11 @@ function CollectPaymentDialog({
 					</div>
 
 					<div className="grid gap-1.5">
-						<label className="text-sm font-medium">Ghi chú</label>
+						<label htmlFor="p-note-input" className="text-sm font-medium">
+							Ghi chú
+						</label>
 						<Input
+							id="p-note-input"
 							value={note}
 							onChange={(event) => setNote(event.target.value)}
 							placeholder="Nội dung giao dịch"
@@ -364,10 +366,11 @@ function CollectPaymentDialog({
 					</div>
 
 					<div className="grid gap-1.5">
-						<label className="text-sm font-medium">
+						<label htmlFor="p-status-select" className="text-sm font-medium">
 							Trạng thái đơn sau khi chốt
 						</label>
 						<Select
+							id="p-status-select"
 							items={statusItems}
 							value={nextStatus}
 							onValueChange={(value) => {
@@ -496,7 +499,7 @@ export function ProductRelatedPayments({
 								Tổng công nợ
 							</p>
 							<p className="mt-1 text-sm font-extrabold text-primary">
-								{formatCurrency(totalOutstanding)}
+								{formatVnd(totalOutstanding)}
 							</p>
 						</CardContent>
 					</Card>
@@ -543,23 +546,19 @@ export function ProductRelatedPayments({
 										<div className="rounded-md border bg-background/60 px-2 py-1.5">
 											<p className="text-muted-foreground">Thuê</p>
 											<p className="font-medium text-foreground">
-												{format(new Date(order.rentalDate), "dd/MM/yyyy", {
-													locale: vi,
-												})}
+												{formatDate(order.rentalDate)}
 											</p>
 										</div>
 										<div className="rounded-md border bg-background/60 px-2 py-1.5">
 											<p className="text-muted-foreground">Trả</p>
 											<p className="font-medium text-foreground">
-												{format(new Date(order.returnDate), "dd/MM/yyyy", {
-													locale: vi,
-												})}
+												{formatDate(order.returnDate)}
 											</p>
 										</div>
 										<div className="rounded-md border bg-background/60 px-2 py-1.5">
 											<p className="text-muted-foreground">Tổng tiền</p>
 											<p className="font-semibold text-foreground">
-												{formatCurrency(order.totalAmount)}
+												{formatVnd(order.totalAmount)}
 											</p>
 										</div>
 										<div className="rounded-md border bg-background/60 px-2 py-1.5">
@@ -572,7 +571,7 @@ export function ProductRelatedPayments({
 														: "text-chart-2",
 												)}
 											>
-												{formatCurrency(Math.max(order.balanceDue, 0))}
+												{formatVnd(Math.max(order.balanceDue, 0))}
 											</p>
 										</div>
 									</div>

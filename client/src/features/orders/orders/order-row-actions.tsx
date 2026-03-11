@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { OrderFragment } from "@/gql/graphql";
 import { OrderStatus, PaymentStatus } from "@/gql/graphql";
+import { formatVnd } from "@/lib/format";
 import { useOrders } from "../common/orders-provider";
 import { ordersQuery, updateOrderStatus } from "../graphql";
 
@@ -88,7 +89,7 @@ export function OrderRowActions({ row }: OrderRowActionsProps) {
 				status,
 				label,
 				title: "Xác nhận giao đồ",
-				desc: `Khách chưa cọc đủ tiền (Thiếu ${new Intl.NumberFormat("vi-VN").format(totalRequiredDeposit - order.depositPaid)}đ). Bạn có chắc chắn vẫn muốn giao đồ cho khách không?`,
+				desc: `Khách chưa cọc đủ tiền (Thiếu ${formatVnd(totalRequiredDeposit - order.depositPaid)}). Bạn có chắc chắn vẫn muốn giao đồ cho khách không?`,
 			});
 			setConfirmOpen(true);
 			return;
@@ -99,7 +100,7 @@ export function OrderRowActions({ row }: OrderRowActionsProps) {
 				status,
 				label,
 				title: "Xác nhận trả đồ",
-				desc: `Đơn hàng vẫn còn nợ ${new Intl.NumberFormat("vi-VN").format(order.balanceDue)}đ. Bạn có chắc chắn muốn xác nhận trả đồ không?`,
+				desc: `Đơn hàng vẫn còn nợ ${formatVnd(order.balanceDue)}. Bạn có chắc chắn muốn xác nhận trả đồ không?`,
 			});
 			setConfirmOpen(true);
 			return;

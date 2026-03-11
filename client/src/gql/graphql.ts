@@ -150,12 +150,22 @@ export type Item = {
 	__typename?: "Item";
 	code: Scalars["String"]["output"];
 	createdAt: Scalars["DateTime"]["output"];
+	futureRentals: Array<ItemFutureRental>;
 	id: Scalars["ID"]["output"];
 	note: Scalars["String"]["output"];
 	status: ItemStatus;
 	updatedAt: Scalars["DateTime"]["output"];
 	variant: ProductVariant;
 	variantId: Scalars["String"]["output"];
+};
+
+export type ItemFutureRental = {
+	__typename?: "ItemFutureRental";
+	customerName: Scalars["String"]["output"];
+	orderCode: Scalars["String"]["output"];
+	orderId: Scalars["ID"]["output"];
+	rentalDate: Scalars["DateTime"]["output"];
+	returnDate: Scalars["DateTime"]["output"];
 };
 
 export enum ItemStatus {
@@ -403,6 +413,7 @@ export type Query = {
 	productVariant: ProductVariant;
 	productVariants: Array<ProductVariant>;
 	products: Array<Product>;
+	upcomingReturns: Array<DashboardDueOrder>;
 };
 
 export type QueryCustomerArgs = {
@@ -482,12 +493,25 @@ export type QueryProductsArgs = {
 	categoryId?: InputMaybe<Scalars["String"]["input"]>;
 };
 
+export type QueryUpcomingReturnsArgs = {
+	days?: InputMaybe<Scalars["Int"]["input"]>;
+};
+
 export type RecordOrderPaymentInput = {
 	amount: Scalars["Int"]["input"];
 	method: Scalars["String"]["input"];
 	note?: InputMaybe<Scalars["String"]["input"]>;
 	orderId: Scalars["String"]["input"];
 	paidAt?: InputMaybe<Scalars["DateTime"]["input"]>;
+};
+
+export type Subscription = {
+	__typename?: "Subscription";
+	orderUpdated: Scalars["String"]["output"];
+};
+
+export type SubscriptionOrderUpdatedArgs = {
+	id?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type UpdateCategoryInput = {
@@ -748,6 +772,53 @@ export type DashboardAnalyticsQuery = {
 			daysToDue: number;
 		}>;
 	};
+};
+
+export type InventoryItemsQueryVariables = Exact<{
+	variantId?: InputMaybe<Scalars["String"]["input"]>;
+}>;
+
+export type InventoryItemsQuery = {
+	__typename?: "Query";
+	items: Array<{
+		__typename?: "Item";
+		id: string;
+		code: string;
+		variantId: string;
+		status: ItemStatus;
+		note: string;
+		createdAt: string;
+		updatedAt: string;
+		futureRentals: Array<{
+			__typename?: "ItemFutureRental";
+			orderId: string;
+			orderCode: string;
+			rentalDate: string;
+			returnDate: string;
+			customerName: string;
+		}>;
+		variant: {
+			__typename?: "ProductVariant";
+			id: string;
+			productId: string;
+			size: string;
+			color: string;
+			rentalPrice: number;
+			deposit: number;
+			imageUrl?: string | null;
+			itemsCount: number;
+			availableCount: number;
+			createdAt: string;
+			updatedAt: string;
+			product: {
+				__typename?: "Product";
+				id: string;
+				name: string;
+				categoryId: string;
+				category: { __typename?: "Category"; id: string };
+			};
+		};
+	}>;
 };
 
 export type VariantFragment = {
@@ -1052,6 +1123,35 @@ export type ProductVariantsQuery = {
 		createdAt: string;
 		updatedAt: string;
 	}>;
+};
+
+export type UpcomingReturnsNotificationQueryVariables = Exact<{
+	days?: InputMaybe<Scalars["Int"]["input"]>;
+}>;
+
+export type UpcomingReturnsNotificationQuery = {
+	__typename?: "Query";
+	upcomingReturns: Array<{
+		__typename?: "DashboardDueOrder";
+		id: string;
+		code: string;
+		customerName: string;
+		customerPhone: string;
+		returnDate: string;
+		totalAmount: number;
+		balanceDue: number;
+		status: OrderStatus;
+		daysToDue: number;
+	}>;
+};
+
+export type OrderUpdatedSubscriptionVariables = Exact<{
+	id?: InputMaybe<Scalars["String"]["input"]>;
+}>;
+
+export type OrderUpdatedSubscription = {
+	__typename?: "Subscription";
+	orderUpdated: string;
 };
 
 export type OrderFragment = {
@@ -2930,6 +3030,164 @@ export const DashboardAnalyticsDocument = {
 	DashboardAnalyticsQuery,
 	DashboardAnalyticsQueryVariables
 >;
+export const InventoryItemsDocument = {
+	kind: "Document",
+	definitions: [
+		{
+			kind: "OperationDefinition",
+			operation: "query",
+			name: { kind: "Name", value: "InventoryItems" },
+			variableDefinitions: [
+				{
+					kind: "VariableDefinition",
+					variable: {
+						kind: "Variable",
+						name: { kind: "Name", value: "variantId" },
+					},
+					type: { kind: "NamedType", name: { kind: "Name", value: "String" } },
+				},
+			],
+			selectionSet: {
+				kind: "SelectionSet",
+				selections: [
+					{
+						kind: "Field",
+						name: { kind: "Name", value: "items" },
+						arguments: [
+							{
+								kind: "Argument",
+								name: { kind: "Name", value: "variantId" },
+								value: {
+									kind: "Variable",
+									name: { kind: "Name", value: "variantId" },
+								},
+							},
+						],
+						selectionSet: {
+							kind: "SelectionSet",
+							selections: [
+								{ kind: "Field", name: { kind: "Name", value: "id" } },
+								{ kind: "Field", name: { kind: "Name", value: "code" } },
+								{ kind: "Field", name: { kind: "Name", value: "variantId" } },
+								{ kind: "Field", name: { kind: "Name", value: "status" } },
+								{ kind: "Field", name: { kind: "Name", value: "note" } },
+								{ kind: "Field", name: { kind: "Name", value: "createdAt" } },
+								{ kind: "Field", name: { kind: "Name", value: "updatedAt" } },
+								{
+									kind: "Field",
+									name: { kind: "Name", value: "futureRentals" },
+									selectionSet: {
+										kind: "SelectionSet",
+										selections: [
+											{
+												kind: "Field",
+												name: { kind: "Name", value: "orderId" },
+											},
+											{
+												kind: "Field",
+												name: { kind: "Name", value: "orderCode" },
+											},
+											{
+												kind: "Field",
+												name: { kind: "Name", value: "rentalDate" },
+											},
+											{
+												kind: "Field",
+												name: { kind: "Name", value: "returnDate" },
+											},
+											{
+												kind: "Field",
+												name: { kind: "Name", value: "customerName" },
+											},
+										],
+									},
+								},
+								{
+									kind: "Field",
+									name: { kind: "Name", value: "variant" },
+									selectionSet: {
+										kind: "SelectionSet",
+										selections: [
+											{ kind: "Field", name: { kind: "Name", value: "id" } },
+											{
+												kind: "Field",
+												name: { kind: "Name", value: "productId" },
+											},
+											{ kind: "Field", name: { kind: "Name", value: "size" } },
+											{ kind: "Field", name: { kind: "Name", value: "color" } },
+											{
+												kind: "Field",
+												name: { kind: "Name", value: "rentalPrice" },
+											},
+											{
+												kind: "Field",
+												name: { kind: "Name", value: "deposit" },
+											},
+											{
+												kind: "Field",
+												name: { kind: "Name", value: "imageUrl" },
+											},
+											{
+												kind: "Field",
+												name: { kind: "Name", value: "itemsCount" },
+											},
+											{
+												kind: "Field",
+												name: { kind: "Name", value: "availableCount" },
+											},
+											{
+												kind: "Field",
+												name: { kind: "Name", value: "createdAt" },
+											},
+											{
+												kind: "Field",
+												name: { kind: "Name", value: "updatedAt" },
+											},
+											{
+												kind: "Field",
+												name: { kind: "Name", value: "product" },
+												selectionSet: {
+													kind: "SelectionSet",
+													selections: [
+														{
+															kind: "Field",
+															name: { kind: "Name", value: "id" },
+														},
+														{
+															kind: "Field",
+															name: { kind: "Name", value: "name" },
+														},
+														{
+															kind: "Field",
+															name: { kind: "Name", value: "categoryId" },
+														},
+														{
+															kind: "Field",
+															name: { kind: "Name", value: "category" },
+															selectionSet: {
+																kind: "SelectionSet",
+																selections: [
+																	{
+																		kind: "Field",
+																		name: { kind: "Name", value: "id" },
+																	},
+																],
+															},
+														},
+													],
+												},
+											},
+										],
+									},
+								},
+							],
+						},
+					},
+				],
+			},
+		},
+	],
+} as unknown as DocumentNode<InventoryItemsQuery, InventoryItemsQueryVariables>;
 export const CreateProductDocument = {
 	kind: "Document",
 	definitions: [
@@ -3800,6 +4058,104 @@ export const ProductVariantsDocument = {
 } as unknown as DocumentNode<
 	ProductVariantsQuery,
 	ProductVariantsQueryVariables
+>;
+export const UpcomingReturnsNotificationDocument = {
+	kind: "Document",
+	definitions: [
+		{
+			kind: "OperationDefinition",
+			operation: "query",
+			name: { kind: "Name", value: "UpcomingReturnsNotification" },
+			variableDefinitions: [
+				{
+					kind: "VariableDefinition",
+					variable: { kind: "Variable", name: { kind: "Name", value: "days" } },
+					type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
+				},
+			],
+			selectionSet: {
+				kind: "SelectionSet",
+				selections: [
+					{
+						kind: "Field",
+						name: { kind: "Name", value: "upcomingReturns" },
+						arguments: [
+							{
+								kind: "Argument",
+								name: { kind: "Name", value: "days" },
+								value: {
+									kind: "Variable",
+									name: { kind: "Name", value: "days" },
+								},
+							},
+						],
+						selectionSet: {
+							kind: "SelectionSet",
+							selections: [
+								{ kind: "Field", name: { kind: "Name", value: "id" } },
+								{ kind: "Field", name: { kind: "Name", value: "code" } },
+								{
+									kind: "Field",
+									name: { kind: "Name", value: "customerName" },
+								},
+								{
+									kind: "Field",
+									name: { kind: "Name", value: "customerPhone" },
+								},
+								{ kind: "Field", name: { kind: "Name", value: "returnDate" } },
+								{ kind: "Field", name: { kind: "Name", value: "totalAmount" } },
+								{ kind: "Field", name: { kind: "Name", value: "balanceDue" } },
+								{ kind: "Field", name: { kind: "Name", value: "status" } },
+								{ kind: "Field", name: { kind: "Name", value: "daysToDue" } },
+							],
+						},
+					},
+				],
+			},
+		},
+	],
+} as unknown as DocumentNode<
+	UpcomingReturnsNotificationQuery,
+	UpcomingReturnsNotificationQueryVariables
+>;
+export const OrderUpdatedDocument = {
+	kind: "Document",
+	definitions: [
+		{
+			kind: "OperationDefinition",
+			operation: "subscription",
+			name: { kind: "Name", value: "OrderUpdated" },
+			variableDefinitions: [
+				{
+					kind: "VariableDefinition",
+					variable: { kind: "Variable", name: { kind: "Name", value: "id" } },
+					type: { kind: "NamedType", name: { kind: "Name", value: "String" } },
+				},
+			],
+			selectionSet: {
+				kind: "SelectionSet",
+				selections: [
+					{
+						kind: "Field",
+						name: { kind: "Name", value: "orderUpdated" },
+						arguments: [
+							{
+								kind: "Argument",
+								name: { kind: "Name", value: "id" },
+								value: {
+									kind: "Variable",
+									name: { kind: "Name", value: "id" },
+								},
+							},
+						],
+					},
+				],
+			},
+		},
+	],
+} as unknown as DocumentNode<
+	OrderUpdatedSubscription,
+	OrderUpdatedSubscriptionVariables
 >;
 export const CreateOrderDocument = {
 	kind: "Document",

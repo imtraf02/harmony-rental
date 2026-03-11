@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/layout/main";
-import { ThemeSwitcher } from "@/components/theme-switcher";
 import { OrderCreateForm } from "@/features/orders";
 
 export const Route = createFileRoute("/_app/orders/new")({
@@ -12,11 +11,7 @@ export const Route = createFileRoute("/_app/orders/new")({
 function RouteComponent() {
 	return (
 		<>
-			<Header>
-				<div className="ms-auto flex items-center space-x-4">
-					<ThemeSwitcher />
-				</div>
-			</Header>
+			<Header />
 			<Main>
 				<div className="mb-6">
 					<div className="flex items-center text-sm text-muted-foreground mb-2">
