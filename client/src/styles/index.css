@@ -76,3 +76,22 @@ input[type="number"] {
 	-moz-appearance: textfield;
 	appearance: textfield; /* Standard property for newer browsers */
 }
+
+@media print {
+	html,
+	body,
+	#root,
+	.print\:block * {
+		background: #ffffff !important;
+		background-color: #ffffff !important;
+	}
+	@page {
+		size: A5;
+		margin: 0; /* Remove default headers and footers from browser */
+	}
+	body {
+		padding: 10mm; /* Add spacing back inside the printed area */
+		print-color-adjust: exact;
+		-webkit-print-color-adjust: exact;
+	}
+}
