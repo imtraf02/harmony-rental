@@ -21,11 +21,9 @@ export function PrintContract({ order }: { order: OrderFragment }) {
 
 	return (
 		<div
-			className="hidden print:block w-full text-black bg-white font-sans min-h-full"
+			className="w-full text-black bg-white font-sans"
 			style={{
-				maxWidth: "148mm",
-				margin: "0 auto",
-				fontSize: "9.5px",
+				fontSize: "9px",
 				lineHeight: "1.4",
 				color: "#1a1a1a",
 				fontFamily: "'Be Vietnam Pro', 'Segoe UI', sans-serif",
@@ -344,7 +342,7 @@ export function PrintContract({ order }: { order: OrderFragment }) {
 										<div
 											style={{
 												fontWeight: 700,
-												fontSize: "9px",
+												fontSize: "8.5px",
 												color: "#1a1a1a",
 												lineHeight: 1.2,
 											}}
@@ -378,7 +376,8 @@ export function PrintContract({ order }: { order: OrderFragment }) {
 										style={{
 											...cellStyle,
 											textAlign: "center",
-											fontWeight: 600,
+											fontWeight: 500,
+											fontSize: "8px",
 										}}
 									>
 										1
@@ -387,7 +386,8 @@ export function PrintContract({ order }: { order: OrderFragment }) {
 										style={{
 											...cellStyle,
 											textAlign: "right",
-											fontWeight: 600,
+											fontWeight: 500,
+											fontSize: "8px",
 											color: "#444",
 										}}
 									>
@@ -397,7 +397,8 @@ export function PrintContract({ order }: { order: OrderFragment }) {
 										style={{
 											...cellStyle,
 											textAlign: "right",
-											fontWeight: 800,
+											fontWeight: 700,
+											fontSize: "8.5px",
 											color: "#7c3f1e",
 											borderRight: "none",
 										}}
@@ -610,7 +611,7 @@ function InfoRow({
 			<span
 				style={{
 					fontWeight: bold || bigName ? 700 : 400,
-					fontSize: bigName ? "10.5px" : "inherit",
+					fontSize: bigName ? "10px" : "inherit",
 					color: accent ? "#7c3f1e" : "#1a1a1a",
 				}}
 			>
@@ -633,22 +634,25 @@ function SummaryRow({
 	green?: boolean;
 	red?: boolean;
 }) {
-	const color = red ? "#dc2626" : green ? "#16a34a" : "#1a1a1a";
+	// Synchronize colors with the Studio palette
+	const labelColor = red ? "#991b1b" : "#5c3d1e";
+	const valueColor = red ? "#991b1b" : green ? "#166534" : "#1a1a1a";
+
 	return (
 		<div
 			style={{
 				display: "flex",
 				justifyContent: "space-between",
-				alignItems: "center",
+				alignItems: "baseline",
 				marginBottom: "4px",
 			}}
 		>
 			<span
 				style={{
-					fontWeight: big ? 800 : 500,
+					fontWeight: big ? 700 : 500,
 					textTransform: big ? "uppercase" : "none",
-					fontSize: big ? "9.5px" : "8.5px",
-					color: red ? "#dc2626" : "#555",
+					fontSize: big ? "9px" : "8px",
+					color: labelColor,
 					letterSpacing: big ? "0.04em" : "normal",
 				}}
 			>
@@ -656,12 +660,12 @@ function SummaryRow({
 			</span>
 			<span
 				style={{
-					fontWeight: 800,
-					fontSize: big ? (red ? "13px" : "12px") : "9px",
-					color,
-					background: red ? "#fef2f2" : "transparent",
-					padding: red ? "1px 6px" : "0",
-					borderRadius: red ? "4px" : "0",
+					fontWeight: 700,
+					fontSize: big ? (red ? "11px" : "10px") : "8.5px",
+					color: valueColor,
+					textAlign: "right",
+					flexGrow: 1,
+					paddingLeft: "8px",
 				}}
 			>
 				{value}

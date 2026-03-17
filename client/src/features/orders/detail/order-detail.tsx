@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/table";
 import type { OrderFragment } from "@/gql/graphql";
 import { formatVnd } from "@/lib/format";
+import { printComponent } from "@/lib/print";
 import { cn } from "@/lib/utils";
 import { orderUpdatedSubscription } from "../../notifications/graphql";
 import { orderQuery } from "../graphql";
@@ -117,6 +118,11 @@ export function OrderDetail() {
 		await mutateItem({ variables: { id: itemId, damageNote: tempNote } });
 	};
 
+	const handlePrint = async () => {
+		if (!order) return;
+		await printComponent(<PrintContract order={order} />);
+	};
+
 	return (
 		<>
 			<div className="print:hidden">
@@ -182,7 +188,7 @@ export function OrderDetail() {
 								<Button
 									variant="outline"
 									className="gap-2"
-									onClick={() => window.print()}
+									onClick={handlePrint}
 								>
 									<IconPrinter className="h-4 w-4" />
 									In hợp đồng
@@ -583,14 +589,11 @@ export function OrderDetail() {
 			</div>
 
 			{!loading && order && (
-				<>
-					<OrderEditDialog
-						open={isEditDialogOpen}
-						onOpenChange={setIsEditDialogOpen}
-						currentRow={order}
-					/>
-					<PrintContract order={order} />
-				</>
+				<OrderEditDialog
+					open={isEditDialogOpen}
+					onOpenChange={setIsEditDialogOpen}
+					currentRow={order}
+				/>
 			)}
 		</>
 	);
