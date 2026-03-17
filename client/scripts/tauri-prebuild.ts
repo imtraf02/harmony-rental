@@ -99,8 +99,9 @@ async function main() {
 	await mkdir(resourcesDir, { recursive: true });
 
 	// ── 2. Generate embedded migrations SQL ──
-	console.info("[tauri-prebuild] Generating embedded migrations...");
-	await sh("bun", ["run", "server/scripts/generate-migrations.ts"], { cwd: repoRoot });
+	// Note: generate-migrations.ts is no longer used as per user feedback.
+	// console.info("[tauri-prebuild] Generating embedded migrations...");
+	// await sh("bun", ["run", "server/scripts/generate-migrations.ts"], { cwd: repoRoot });
 
 	// ── 3. Bundle server into a single JS file ──
 	const serverEntry = join(repoRoot, "server", "src", "index.ts");
